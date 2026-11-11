@@ -108,6 +108,19 @@
 
 ## 8. Thư Viện Hình Ảnh Giao Diện & 4 Bối Cảnh Khoa Cử
 
+### 🎬 Video Demo Phiên Phát Trực Tiếp Thực Tế Trên TikTok LIVE
+
+<div align="center">
+  <a href="../docs/media/live-demo.mp4">
+    <img src="../docs/media/live-demo-preview.gif" width="320" alt="Video Demo Phiên Live Thực Tế" />
+  </a>
+  <p>
+    ▶️ <a href="../docs/media/live-demo.mp4"><b>Xem Video Demo thực tế có âm thanh giọng đọc Ông Đồ AI (`docs/media/live-demo.mp4`)</b></a>
+  </p>
+</div>
+
+### 🏛️ Bốn Cấp Độ Trường Thi Khoa Cử
+
 | Kỳ 1: Khảo Hạch Trường Làng | Kỳ 2: Thi Hương | Kỳ 3: Thi Hội (Văn Miếu) | Kỳ 4: Thi Đình (Hoàng Cung) |
 | :---: | :---: | :---: | :---: |
 | <img src="../public/assets/bg/nen2.jpg" width="210" alt="Kỳ 1 - Khảo Hạch" /> | <img src="../public/assets/bg/nen-huong.jpg" width="210" alt="Kỳ 2 - Thi Hương" /> | <img src="../public/assets/bg/nen-hoi.jpg" width="210" alt="Kỳ 3 - Thi Hội" /> | <img src="../public/assets/bg/nen-dinh.jpg" width="210" alt="Kỳ 4 - Thi Đình" /> |

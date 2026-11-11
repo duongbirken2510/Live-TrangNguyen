@@ -41,6 +41,19 @@ Kết thúc 20 câu, 3 sĩ tử xuất sắc nhất được sắc phong **Tam K
 
 ## 🖼️ 2. Hình Ảnh Minh Họa & 4 Bối Cảnh Khoa Cử
 
+### 🎬 Video Demo Phiên Phát Trực Tiếp Thực Tế Trên TikTok LIVE
+
+<div align="center">
+  <a href="docs/media/live-demo.mp4">
+    <img src="docs/media/live-demo-preview.gif" width="320" alt="Video Demo Phiên Live Thực Tế Ai Là Trạng Nguyên" />
+  </a>
+  <p>
+    ▶️ <a href="docs/media/live-demo.mp4"><b>Nhấn vào đây để xem / tải Video Demo đầy đủ có âm thanh giọng Ông Đồ AI (MP4)</b></a>
+  </p>
+</div>
+
+---
+
 ### 🏛️ Bốn Cấp Độ Trường Thi (Giữ Nguyên 100% Tọa Độ Bảng Đen & 31 Bàn Sĩ Tử)
 
 Giao diện sân thi tự động chuyển đổi mượt mà (crossfade) qua 4 cấp độ kiến trúc cổ truyền Việt Nam theo từng vòng thi, đi kèm sự thay đổi của hiệu ứng thiên nhiên và nhân vật trên sân:
