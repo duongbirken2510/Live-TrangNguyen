@@ -70,8 +70,8 @@ Giao diện sân thi tự động chuyển đổi mượt mà (crossfade) qua 4 
 
 | Quan Chủ Khảo (Ông Đồ) | Tam Khôi Vinh Quy (Nam & Nữ) | Sĩ Tử Dự Thi & Trẻ Làng |
 | :---: | :---: | :---: |
-| <img src="public/assets/nv/mc/vui.webp" height="130" alt="Ông Đồ Vui" /> <img src="public/assets/nv/mc/ngac-nhien.webp" height="130" alt="Ông Đồ Ngạc Nhiên" /> | <img src="public/assets/nv/top/trang-nam.webp" height="130" alt="Trạng Nguyên Nam" /> <img src="public/assets/nv/top/trang-nu.webp" height="130" alt="Trạng Nguyên Nữ" /> | <img src="public/assets/nv/lang/si-tu-nam.webp" height="120" alt="Sĩ Tử Nam" /> <img src="public/assets/nv/lang/si-tu-nu.webp" height="120" alt="Sĩ Tử Nữ" /> <img src="public/assets/nv/lang/tre-nam.webp" height="100" alt="Trẻ Làng" /> |
-| **4 trạng thái cảm xúc:** Bình thường, Vui cười, Ngạc nhiên, Thở dài tiếc nuối theo kết quả từng câu | **Đủ bộ trang phục:** Trạng Nguyên, Bảng Nhãn, Thám Hoa cho cả **Nam** và **Nữ** | **31 bàn sĩ tử** quay lưng hướng lên bảng đen + nhân vật bước đi ở lối giữa |
+| <img src="public/assets/nv/mc/chi.webp" height="130" alt="Ông Đồ Chỉ Bảng" /> <img src="public/assets/nv/mc/mung.webp" height="130" alt="Ông Đồ Vui Mừng" /> | <img src="public/assets/nv/top/top1-nam.webp" height="130" alt="Trạng Nguyên Nam" /> <img src="public/assets/nv/top/top1-nu.webp" height="130" alt="Trạng Nguyên Nữ" /> | <img src="public/assets/nv/lang/si-tu-nam.webp" height="120" alt="Sĩ Tử Nam" /> <img src="public/assets/nv/lang/si-tu-nu.webp" height="120" alt="Sĩ Tử Nữ" /> <img src="public/assets/nv/lang/tre-nam.webp" height="100" alt="Trẻ Làng" /> |
+| **5 trạng thái cảm xúc:** Chỉ bảng, Cười, Vui mừng, Suy nghĩ, Tiếc nuối theo kết quả từng câu | **Đủ bộ trang phục:** Trạng Nguyên, Bảng Nhãn, Thám Hoa cho cả **Nam** và **Nữ** | **31 bàn sĩ tử** quay lưng hướng lên bảng đen + nhân vật bước đi ở lối giữa |
 
 ---
 
