@@ -15,16 +15,26 @@ const CREAM = '#fff1cc';
 const PHAN = '#f5f1e6'; // màu chữ phấn trên bảng đen
 const PANEL = 'rgba(38,18,8,.80)';
 
+// 4 bối cảnh nâng cấp dần theo từng kỳ thi (giữ nguyên 100% toạ độ bảng đen và 31 bàn sĩ tử)
+const BG_VONG = [
+  '/assets/bg/nen2.jpg',      // Kỳ 1: Khảo hạch trường làng (sân đất, mái tranh, bàn gỗ mộc)
+  '/assets/bg/nen-huong.jpg', // Kỳ 2: Thi Hương (sân gạch Bát Tràng, mái ngói âm dương, đèn lồng đỏ)
+  '/assets/bg/nen-hoi.jpg',   // Kỳ 3: Thi Hội (Văn Miếu Quốc Tử Giám, sân đá xanh, thảm đỏ, cờ hội)
+  '/assets/bg/nen-dinh.jpg',  // Kỳ 4: Thi Đình (Sân Rồng Hoàng Cung, mái Hoàng Lưu Ly, viền rồng vàng)
+] as const;
+
 export function GameStage({ game }: { game: GameState }) {
   const v = game.view;
   if (!v) return <div className="absolute inset-0" />;
   const bigBoard = v.phase === 'bangVang' || v.phase === 'vinhQuy';
+  const bgIdx = v.phase === 'cho' ? 0 : Math.max(0, Math.min(BG_VONG.length - 1, v.vong));
   return (
     <div className="absolute inset-0 select-none" style={{ color: CREAM }}>
-      <CayDa />
-      <DanLang />
+      <NenVong bgIdx={bgIdx} />
+      <CayDa bgIdx={bgIdx} />
+      <DanLang bgIdx={bgIdx} />
       <SanThi v={v} />
-      <TreCon ten={v.treCon} />
+      <TreCon ten={v.treCon} bgIdx={bgIdx} />
 
       {!bigBoard && <DongCau v={v} tieuDe={game.caiDat.tieuDe} />}
       {!bigBoard && <BangDen v={v} />}
@@ -147,21 +157,42 @@ const DAM_TRE = [
   { left: 485, dur: 16.5, delay: -11, nu: true },
   { left: 545, dur: 12.5, delay: -6.5, nu: false },
 ];
-function TreCon({ ten }: { ten: string[] }) {
+function TreCon({ ten, bgIdx }: { ten: string[]; bgIdx: number }) {
+  const laSiTu = bgIdx >= 1;
   return (
     <div className="pointer-events-none absolute inset-0" style={{ zIndex: 1500 }}>
-      {DAM_TRE.map((t, i) => (
-        <div key={i} className="tre-chay absolute" style={{ left: t.left, top: 880, animationDuration: `${t.dur}s`, animationDelay: `${t.delay}s` }}>
-          {ten[i] && (
-            <div className="absolute bottom-full left-1/2 mb-1 max-w-[150px] -translate-x-1/2 truncate whitespace-nowrap rounded-full border-2 px-2 text-[17px] font-bold leading-[24px]" style={{ background: 'rgba(30,14,6,.82)', borderColor: 'rgba(217,164,65,.7)', color: CREAM }}>
-              {ten[i]}
+      {DAM_TRE.map((t, i) => {
+        // Ở Kỳ 4 (Thi Đình - Sân Rồng Hoàng Cung): chỉ hiện sĩ tử khi có tên người xem thực sự để giữ vẻ trang nghiêm trên thảm rồng
+        if (bgIdx === 3 && !ten[i]) return null;
+        const dur = laSiTu ? t.dur * 1.45 : t.dur;
+        const sprite = laSiTu
+          ? `/assets/nv/lang/${t.nu ? 'si-tu-nu' : 'si-tu-nam'}.webp`
+          : `/assets/nv/lang/${t.nu ? 'tre-nu' : 'tre-nam'}.webp`;
+        return (
+          <div key={i} className="tre-chay absolute" style={{ left: t.left, top: 880, animationDuration: `${dur}s`, animationDelay: `${t.delay}s` }}>
+            {ten[i] && (
+              <div
+                className="absolute bottom-full left-1/2 mb-1 max-w-[150px] -translate-x-1/2 truncate whitespace-nowrap rounded-full border-2 px-2 text-[17px] font-bold leading-[24px]"
+                style={{
+                  background: bgIdx === 3 ? 'linear-gradient(#7a1c14,#420c07)' : 'rgba(30,14,6,.82)',
+                  borderColor: bgIdx === 3 ? '#ffd700' : 'rgba(217,164,65,.7)',
+                  color: CREAM,
+                }}
+              >
+                {ten[i]}
+              </div>
+            )}
+            <div className="tre-lat" style={{ animationDuration: `${dur}s`, animationDelay: `${t.delay}s` }}>
+              <img
+                className={laSiTu ? 'tre-nhun-cham' : 'tre-nhun'}
+                src={sprite}
+                style={{ height: laSiTu ? (t.nu ? 132 : 140) : (t.nu ? 118 : 128), animationDelay: `${i * -0.13}s` }}
+                draggable={false}
+              />
             </div>
-          )}
-          <div className="tre-lat" style={{ animationDuration: `${t.dur}s`, animationDelay: `${t.delay}s` }}>
-            <img className="tre-nhun" src={`/assets/nv/lang/${t.nu ? 'tre-nu' : 'tre-nam'}.webp`} style={{ height: t.nu ? 118 : 128, animationDelay: `${i * -0.13}s` }} draggable={false} />
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -170,38 +201,133 @@ function TreCon({ ten }: { ten: string[] }) {
  * Tán đa rung nhẹ theo gió: một lớp cắt đúng phần tán lá của chính ảnh nền, lắc rất nhẹ, mép dưới mờ dần
  * để không lộ đường cắt. Thêm vài chiếc lá đa rơi lác đác (chỉ dùng transform cho nhẹ máy).
  */
+const MAU_LA_VONG = [
+  ['#6f8f2f', '#9aa83a', '#c9a23a', '#7c6a2b'], // Kỳ 1: lá đa xanh
+  ['#d99b26', '#e07a24', '#b8862d', '#8c9e35'], // Kỳ 2: lá thu vàng ấm
+  ['#d94e34', '#e8a33d', '#c82829', '#f0c24b'], // Kỳ 3: lá đỏ vàng kinh kỳ
+  ['#ffd700', '#ffae00', '#fff1a8', '#e69500'], // Kỳ 4: kim diệp hoàng cung
+];
 const LA = Array.from({ length: 9 }, (_, i) => ({
   left: 40 + ((i * 113) % 1000),
   delay: i * 1.7,
   dur: 11 + (i % 4) * 2.5,
   size: 20 + (i % 3) * 7,
-  mau: ['#6f8f2f', '#9aa83a', '#c9a23a', '#7c6a2b'][i % 4],
 }));
-function CayDa() {
+
+function NenVong({ bgIdx }: { bgIdx: number }) {
+  const bgUrl = BG_VONG[bgIdx] ?? BG_VONG[0];
   return (
-    <div className="pointer-events-none absolute inset-0">
-      <div className="cay-rung absolute left-0 top-0" style={{ width: 1080, height: 380, backgroundImage: "url('/assets/bg/nen2.jpg')", backgroundSize: '1080px 1920px', backgroundPosition: 'top left', WebkitMaskImage: 'linear-gradient(#000 70%, transparent)', maskImage: 'linear-gradient(#000 70%, transparent)' }} />
-      {LA.map((l, i) => (
-        <svg key={i} className="la-roi absolute" viewBox="0 0 20 30" style={{ left: l.left, top: -40, width: l.size, height: l.size * 1.5, animationDelay: `${l.delay}s`, animationDuration: `${l.dur}s` }}>
-          <path d="M10 1 C17 8 18 20 10 29 C2 20 3 8 10 1 Z" fill={l.mau} />
-          <path d="M10 3 L10 27" stroke="rgba(0,0,0,.25)" strokeWidth="1" />
-        </svg>
-      ))}
+    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      {/* Tải sẵn cả 4 ảnh nền để khi chuyển kỳ thi mượt ngay lập tức */}
+      <div className="hidden">
+        {BG_VONG.map((src) => (
+          <img key={src} src={src} alt="" />
+        ))}
+      </div>
+      <AnimatePresence initial={false}>
+        <motion.div
+          key={bgUrl}
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url('${bgUrl}')`,
+            backgroundSize: '1080px 1920px',
+            backgroundPosition: 'top center',
+            backgroundRepeat: 'no-repeat',
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.85, ease: 'easeInOut' }}
+        />
+      </AnimatePresence>
     </div>
   );
 }
 
-/** Già làng và các cụ ngồi xem ở sân trống bên phải, cạnh cột bảng đen */
-function DanLang() {
+function CayDa({ bgIdx }: { bgIdx: number }) {
+  const bgUrl = BG_VONG[bgIdx] ?? BG_VONG[0];
+  const bangMau = MAU_LA_VONG[bgIdx] ?? MAU_LA_VONG[0];
+  return (
+    <div className="pointer-events-none absolute inset-0">
+      {/* Ở Kỳ 4 (Thi Đình) có đèn lồng cung đình phía trên nên không phủ lớp tán cây rung đè lên đèn lồng */}
+      {bgIdx < 3 && (
+        <div
+          className="cay-rung absolute left-0 top-0 transition-[background-image] duration-700"
+          style={{
+            width: 1080,
+            height: 350,
+            backgroundImage: `url('${bgUrl}')`,
+            backgroundSize: '1080px 1920px',
+            backgroundPosition: 'top left',
+            WebkitMaskImage: 'linear-gradient(#000 65%, transparent)',
+            maskImage: 'linear-gradient(#000 65%, transparent)',
+          }}
+        />
+      )}
+      {LA.map((l, i) => {
+        const fill = bangMau[i % 4];
+        if (bgIdx === 3) {
+          // Kỳ 4 (Thi Đình): Đom đóm hoàng kim / hạt sáng sao 4 cánh lấp lánh
+          return (
+            <svg
+              key={i}
+              className="la-roi absolute"
+              viewBox="0 0 24 24"
+              style={{
+                left: l.left,
+                top: -40,
+                width: l.size * 1.1,
+                height: l.size * 1.1,
+                animationDelay: `${l.delay}s`,
+                animationDuration: `${l.dur * 1.15}s`,
+                filter: 'drop-shadow(0 0 8px rgba(255,215,0,0.95))',
+              }}
+            >
+              <path d="M12 0 C13.5 8.5 15.5 10.5 24 12 C15.5 13.5 13.5 15.5 12 24 C10.5 15.5 8.5 13.5 0 12 C8.5 10.5 10.5 8.5 12 0 Z" fill={fill} />
+              <circle cx="12" cy="12" r="3" fill="#ffffff" />
+            </svg>
+          );
+        }
+        if (bgIdx === 2) {
+          // Kỳ 3 (Thi Hội - Văn Miếu): Cánh hoa đào / hoa trạng nguyên bay trong gió
+          return (
+            <svg
+              key={i}
+              className="la-roi absolute"
+              viewBox="0 0 24 24"
+              style={{ left: l.left, top: -40, width: l.size, height: l.size, animationDelay: `${l.delay}s`, animationDuration: `${l.dur}s` }}
+            >
+              <path d="M12 2 C17 2 21 7 19 13 C17 18 13 21 12 22 C11 21 7 18 5 13 C3 7 7 2 12 2 Z" fill={fill} opacity="0.92" />
+            </svg>
+          );
+        }
+        // Kỳ 1 & Kỳ 2: Lá đa xanh / Lá thu vàng
+        return (
+          <svg key={i} className="la-roi absolute" viewBox="0 0 20 30" style={{ left: l.left, top: -40, width: l.size, height: l.size * 1.5, animationDelay: `${l.delay}s`, animationDuration: `${l.dur}s` }}>
+            <path d="M10 1 C17 8 18 20 10 29 C2 20 3 8 10 1 Z" fill={fill} />
+            <path d="M10 3 L10 27" stroke="rgba(0,0,0,.25)" strokeWidth="1" />
+          </svg>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Già làng và các cụ ngồi xem: Kỳ 1 có đủ dân làng, Kỳ 2 chỉ giữ 2 bậc trưởng lão, Kỳ 3-4 ẩn để tôn kiến trúc Văn Miếu / Hoàng Cung */
+function DanLang({ bgIdx }: { bgIdx: number }) {
+  if (bgIdx >= 2) return null;
   return (
     <div className="pointer-events-none absolute inset-0">
       <img className="cu-ngoi absolute" src="/assets/nv/lang/ong-quat.webp" style={{ left: 958, top: 872, height: 140 }} draggable={false} />
       <img className="cu-ngoi absolute" src="/assets/nv/lang/gia-lang.webp" style={{ left: 870, top: 862, height: 158, animationDelay: '1.3s' }} draggable={false} />
-      {/* thêm các cụ đứng xem dọc mép sân, hai bên dãy bàn */}
-      <img className="cu-ngoi absolute" src="/assets/nv/lang/ba-non.webp" style={{ left: 985, top: 1010, height: 130, animationDelay: '0.6s' }} draggable={false} />
-      <img className="cu-ngoi absolute" src="/assets/nv/lang/ba-cuoc.webp" style={{ left: 990, top: 1140, height: 150, animationDelay: '2s' }} draggable={false} />
-      <img className="cu-ngoi absolute" src="/assets/nv/lang/ong-gay.webp" style={{ left: 6, top: 930, height: 140, animationDelay: '0.9s' }} draggable={false} />
-      <img className="cu-ngoi absolute" src="/assets/nv/lang/ba-om-goi.webp" style={{ left: 0, top: 1080, height: 140, animationDelay: '1.7s' }} draggable={false} />
+      {bgIdx === 0 && (
+        <>
+          <img className="cu-ngoi absolute" src="/assets/nv/lang/ba-non.webp" style={{ left: 985, top: 1010, height: 130, animationDelay: '0.6s' }} draggable={false} />
+          <img className="cu-ngoi absolute" src="/assets/nv/lang/ba-cuoc.webp" style={{ left: 990, top: 1140, height: 150, animationDelay: '2s' }} draggable={false} />
+          <img className="cu-ngoi absolute" src="/assets/nv/lang/ong-gay.webp" style={{ left: 6, top: 930, height: 140, animationDelay: '0.9s' }} draggable={false} />
+          <img className="cu-ngoi absolute" src="/assets/nv/lang/ba-om-goi.webp" style={{ left: 0, top: 1080, height: 140, animationDelay: '1.7s' }} draggable={false} />
+        </>
+      )}
     </div>
   );
 }

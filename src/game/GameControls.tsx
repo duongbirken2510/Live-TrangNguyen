@@ -61,6 +61,18 @@ export function GameControls() {
           🚫 Bỏ câu này
         </button>
       </div>
+      <div className="text-sm text-white/60">Chuyển nhanh kỳ thi (đổi bối cảnh sân thi):</div>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {GAME.vong.map((v, i) => (
+          <button
+            key={i}
+            className="rounded-xl bg-amber-500/15 px-3 py-2 text-xs font-bold text-amber-200 ring-1 ring-amber-400/30 hover:bg-amber-500/30"
+            onClick={() => sendControl('custom', `vong:${i}`)}
+          >
+            Kỳ {i + 1}: {v.nhan}
+          </button>
+        ))}
+      </div>
       <div className="text-sm text-white/60">Giả lập (bấm lúc đang hiện 4 đáp án):</div>
       <div className="flex flex-wrap gap-2">
         <button className={`${btn} bg-white/10 text-white`} onClick={() => giaLap(1, 500)}>1 người</button>

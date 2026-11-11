@@ -1,138 +1,296 @@
-# Ai Là Trạng Nguyên
+# 🏮 AI LÀ TRẠNG NGUYÊN — Live-TrangNguyen
 
-Game show đố vui cho **TikTok LIVE**, lấy cảm hứng từ khoa cử ngày xưa. Ông đồ cầm mic đọc câu hỏi và 4 đáp án, người xem gõ **A, B, C hoặc D** vào bình luận. Mỗi ván 20 câu qua 4 kỳ thi: khảo hạch trường làng, thi Hương, thi Hội, thi Đình. Hết ván, ba người điểm cao nhất đỗ Trạng Nguyên, Bảng Nhãn, Thám Hoa và được vinh danh trên màn hình.
+<div align="center">
+  <img src="ai-la-trang-nguyen.png" alt="Ai Là Trạng Nguyên — Game Show Khoa Cử Tương Tác TikTok LIVE" width="420" />
+  <p><b>Game Show Đố Vui Khoa Cử Tương Tác Thời Gian Thực Dành Cho TikTok LIVE</b></p>
+  <p>
+    <i>Hành trình từ Trường Làng đến Sân Rồng Hoàng Cung · Tích hợp sẵn giọng đọc AI VieNeu-TTS ("Adam bựa" & 25 giọng Việt) · Chấm điểm chuẩn từng mili-giây</i>
+  </p>
+</div>
 
-Game chạy trên máy tính của bạn, gắn vào TikTok LIVE Studio như một nguồn Link. Không cần biết lập trình, chỉ cần làm theo các bước bên dưới.
+---
 
-## Game có gì
+## 📖 Mục Lục
 
-- **Gần 5.000 câu hỏi tiếng Việt** chia 14 chủ đề: lịch sử Việt Nam, địa lý, văn học, ca dao tục ngữ, khoa học, sức khoẻ, động thực vật, văn hoá ẩm thực, thế giới, phát minh, nghệ thuật, thể thao, khoa cử và danh nhân, đố mẹo. Câu khó dần theo kỳ thi. Mỗi kỳ có thêm một câu toán nhẩm máy tự ra nên không bao giờ hết.
-- **Điểm theo tốc độ**: đúng càng nhanh điểm càng cao, sai bị trừ. Tốc độ tính theo giờ TikTok ghi lúc người xem bấm gửi, không phụ thuộc mạng chậm hay nhanh. Câu cuối ván điểm nhân đôi.
-- **Thi đua 3 miền**: gõ Bắc, Trung hoặc Nam để vào phe, điểm cả phe cộng dồn.
-- **Cứu trợ bằng tim**: ở thi Đình, cả phòng thả đủ tim thì ông đồ loại 2 đáp án sai.
-- **Bảng vàng** sau mỗi kỳ, **bảng vàng tuần** cộng điểm nhiều ván, dấu 🏆 🎓 🔥 cạnh tên người chơi giỏi.
-- **Ông đồ biết nói chuyện**: đọc đề, công bố đáp án có cười có thở dài, trêu người than khó, hô tên người vừa vượt lên dẫn đầu, cảm ơn quà theo từng món. Ông **không bao giờ đọc nguyên văn bình luận**, chỉ dùng câu soạn sẵn có chèn tên, nên không ai bắt ông nói bậy được.
-- **Quà**: băng rôn có avatar và tên người tặng, quà từ 99 xu có pháo giấy. Quà **không cho lợi thế gì trong game**, đúng quy định TikTok.
-- **Âm thanh tự tạo**: nhạc nền đàn tranh, trống dồn lúc hết giờ, chiêng lúc công bố, pháo lúc vinh quy. Không dùng nhạc có bản quyền.
-- **Sân thi đầu làng**: câu hỏi viết phấn lên bảng đen dưới mái tranh. Ai nộp bài thì được ngồi một bàn, tên hiện trên đầu, điểm cao ngồi các hàng giữa. Ai chưa có ghế thì tên hiện trên đám trẻ con chạy lên chạy xuống lối giữa. Hai bên sân có các cụ ngồi xem, cây đa đung đưa, lá rơi lác đác. Chữ trên mái tranh và tên ông đồ đổi được ở trang điều khiển.
-- **Chạy cả buổi**: hết ván tự sang ván mới; mất kết nối TikTok thì tự kết nối lại.
+1. [Giới Thiệu Dự Án](#-1-giới-thiệu-dự-án)
+2. [Hình Ảnh Minh Họa & 4 Bối Cảnh Khoa Cử](#-2-hình-ảnh-minh-họa--4-bối-cảnh-khoa-cử)
+3. [Các Chức Năng Nổi Bật Của Dự Án](#-3-các-chức-năng-nổi-bật-của-dự-án)
+4. [Quy Tắc Chơi, Cách Tính Điểm & Xếp Chỗ Ngồi](#-4-quy-tắc-chơi-cách-tính-điểm--xếp-chỗ-ngồi)
+5. [Bảng Điều Khiển Dành Cho Chủ Kênh (Dashboard)](#-5-bảng-điều-khiển-dành-cho-chủ-kênh-dashboard)
+6. [Hướng Dẫn Cài Đặt & Phát Trực Tiếp (TikTok LIVE Studio)](#-6-hướng-dẫn-cài-đặt--phát-trực-tiếp-tiktok-live-studio)
+7. [Kiến Trúc Kỹ Thuật & Tự Tùy Chỉnh](#-7-kiến-trúc-kỹ-thuật--tự-tùy-chỉnh)
+8. [Xử Lý Sự Cố Thường Gặp (FAQ)](#-8-xử-lý-sự-cố-thường-gặp-faq)
 
-## Cần chuẩn bị
+---
 
-1. Máy tính **Windows 10 hoặc 11**, có mạng.
-2. **TikTok LIVE Studio** và tài khoản được phép phát trực tiếp.
-3. **Node.js** bản LTS (bản 20 trở lên). Chỉ cài một lần.
+## 🎯 1. Giới Thiệu Dự Án
 
-## Cài đặt từng bước
+**Ai Là Trạng Nguyên (`Live-TrangNguyen`)** là nền tảng game show đố vui tương tác tự động 100% dành cho **TikTok LIVE**, lấy cảm hứng từ truyền thống khoa cử Việt Nam xưa.
 
-### Bước 1: Cài Node.js
+Trên màn hình dọc chuẩn `1080 × 1920`, **Ông Đồ** cầm micro trực tiếp đọc câu hỏi, dẫn chuyện, trêu đùa khán giả, cảm ơn quà tặng và xướng tên vinh danh bằng giọng AI tự nhiên. Khán giả xem live tham gia thi tài chỉ bằng cách **gõ bình luận `A`, `B`, `C`, `D`**, chọn phe **Bắc - Trung - Nam**, hoặc **thả tim cứu trợ** ngay trên luồng phát trực tiếp.
 
-1. Vào [nodejs.org](https://nodejs.org), bấm nút tải bản **LTS**.
-2. Mở file vừa tải, bấm Next tới hết, giữ nguyên các lựa chọn mặc định.
-3. Cài xong thì khởi động lại máy cho chắc.
+Mỗi ván thi gồm **20 câu hỏi** đi qua **4 kỳ khoa cử** có bối cảnh kiến trúc, nhân vật và hiệu ứng thăng cấp dần từ mộc mạc đến uy nghiêm:
+1. **Kỳ 1 — Khảo Hạch Trường Làng** *(Câu 1 – 5)*
+2. **Kỳ 2 — Thi Hương** *(Câu 6 – 10)*
+3. **Kỳ 3 — Thi Hội — Văn Miếu Quốc Tử Giám** *(Câu 11 – 15)*
+4. **Kỳ 4 — Thi Đình — Sân Rồng Hoàng Cung** *(Câu 16 – 20)*
 
-### Bước 2: Tải game về máy
+Kết thúc 20 câu, 3 sĩ tử xuất sắc nhất được sắc phong **Tam Khôi** (**Trạng Nguyên – Bảng Nhãn – Thám Hoa**) trong màn **Vinh Quy Bái Tổ** rợp pháo giấy và ghi danh vào **Bảng Vàng Tuần**.
 
-Cách dễ nhất:
+---
 
-1. Trên trang GitHub này, bấm nút xanh **Code**, chọn **Download ZIP**.
-2. Giải nén file ZIP ra một thư mục, ví dụ `D:\ai-la-trang-nguyen`. Đường dẫn nên ngắn và không có dấu tiếng Việt.
+## 🖼️ 2. Hình Ảnh Minh Họa & 4 Bối Cảnh Khoa Cử
 
-Nếu bạn đã dùng Git:
+### 🏛️ Bốn Cấp Độ Trường Thi (Giữ Nguyên 100% Tọa Độ Bảng Đen & 31 Bàn Sĩ Tử)
 
-```bash
-git clone https://github.com/workaipvlinh-byte/ai-la-trang-nguyen.git
+Giao diện sân thi tự động chuyển đổi mượt mà (crossfade) qua 4 cấp độ kiến trúc cổ truyền Việt Nam theo từng vòng thi, đi kèm sự thay đổi của hiệu ứng thiên nhiên và nhân vật trên sân:
+
+| Kỳ 1: Khảo Hạch Trường Làng | Kỳ 2: Thi Hương | Kỳ 3: Thi Hội (Văn Miếu) | Kỳ 4: Thi Đình (Hoàng Cung) |
+| :---: | :---: | :---: | :---: |
+| <img src="public/assets/bg/nen2.jpg" width="210" alt="Kỳ 1 - Khảo Hạch Trường Làng" /> | <img src="public/assets/bg/nen-huong.jpg" width="210" alt="Kỳ 2 - Thi Hương" /> | <img src="public/assets/bg/nen-hoi.jpg" width="210" alt="Kỳ 3 - Thi Hội Văn Miếu" /> | <img src="public/assets/bg/nen-dinh.jpg" width="210" alt="Kỳ 4 - Thi Đình Hoàng Cung" /> |
+| **Sân đất đầu làng**, mái tranh vách nứa, bàn gỗ mộc dưới gốc đa cổ thụ | **Trường thi hàng tổng**, sân gạch Bát Tràng đỏ, mái ngói âm dương, đèn lồng đỏ | **Văn Miếu Quốc Tử Giám**, sân đá xanh, thảm đỏ thêu kim tuyến, bàn gỗ gụ sơn son | **Sân Rồng Điện Thái Hòa**, mái ngói Hoàng Lưu Ly, rồng chầu thềm ngọc, bàn thếp vàng |
+| 🍃 *Lá đa xanh rơi · 6 cụ già & dân làng ngồi xem · Trẻ mục đồng chạy nhảy* | 🍂 *Lá thu vàng rơi · 2 bậc trưởng lão quan sát · Sĩ tử áo dài khăn đóng đi thi* | 🌸 *Cánh hoa trạng nguyên bay · Sĩ tử nho sinh bước đi điềm đạm trên thảm đỏ* | ✨ *Kim diệp & đom đóm hoàng kim lấp lánh · Sân rồng tôn nghiêm* |
+
+---
+
+### 👨‍🏫 Hệ Thống Nhân Vật & Biểu Cảm Động Trên Sân Thi
+
+| Quan Chủ Khảo (Ông Đồ) | Tam Khôi Vinh Quy (Nam & Nữ) | Sĩ Tử Dự Thi & Trẻ Làng |
+| :---: | :---: | :---: |
+| <img src="public/assets/nv/mc/vui.webp" height="130" alt="Ông Đồ Vui" /> <img src="public/assets/nv/mc/ngac-nhien.webp" height="130" alt="Ông Đồ Ngạc Nhiên" /> | <img src="public/assets/nv/top/trang-nam.webp" height="130" alt="Trạng Nguyên Nam" /> <img src="public/assets/nv/top/trang-nu.webp" height="130" alt="Trạng Nguyên Nữ" /> | <img src="public/assets/nv/lang/si-tu-nam.webp" height="120" alt="Sĩ Tử Nam" /> <img src="public/assets/nv/lang/si-tu-nu.webp" height="120" alt="Sĩ Tử Nữ" /> <img src="public/assets/nv/lang/tre-nam.webp" height="100" alt="Trẻ Làng" /> |
+| **4 trạng thái cảm xúc:** Bình thường, Vui cười, Ngạc nhiên, Thở dài tiếc nuối theo kết quả từng câu | **Đủ bộ trang phục:** Trạng Nguyên, Bảng Nhãn, Thám Hoa cho cả **Nam** và **Nữ** | **31 bàn sĩ tử** quay lưng hướng lên bảng đen + nhân vật bước đi ở lối giữa |
+
+---
+
+## 🌟 3. Các Chức Năng Nổi Bật Của Dự Án
+
+### 🎙️ 3.1. Nhúng Trực Tiếp AI Voice VieNeu-TTS ("Adam bựa" & 25 Giọng Việt)
+- **Chạy gọn trong 1 cửa sổ duy nhất:** Dự án nhúng trực tiếp mô hình **VieNeu-TTS v3 Turbo (`onnx_int8`)** qua tiến trình con giao tiếp nhị phân `stdio` (`tools/vieneu-worker.py`), **không cần mở cửa sổ CMD thứ 2**, không chiếm cổng mạng (`8000`) và không xung đột với phần mềm khác trên máy.
+- **Mặc định giọng "Adam bựa" + 25 giọng đọc chọn ngay trên Dashboard:** Hỗ trợ đổi nóng giữa 25 giọng AI tiếng Việt (Bắc / Trung / Nam, Nam / Nữ, giọng kể chuyện, giọng hài hước) hoặc chuyển sang giọng **Microsoft Edge (`vi-VN-NamMinhNeural`)** bất cứ lúc nào.
+- **Kiến trúc 2 làn giọng đọc (Priority & Prefetch Queue):**
+  - Tự động **tạo sẵn âm thanh (Prefetch)** cho đáp án trong lúc khán giả đang suy nghĩ và tạo sẵn đề câu tiếp theo ngay khi vừa công bố đáp án, giúp Ông Đồ đọc tức thì với độ trễ gần bằng `0`.
+  - Làn đọc ưu tiên (`priority`) dành cho đề thi, hết giờ, công bố đáp án; làn phụ dành cho lời chào người mới và trêu đùa khán giả vào khoảng nghỉ.
+  - Cơ chế **3 tầng dự phòng tự động**: `VieNeu-TTS (Local AI)` ➔ `Microsoft Edge TTS` ➔ `Google Translate TTS`, đảm bảo Ông Đồ không bao giờ bị mất tiếng giữa buổi live.
+
+### 📚 3.2. Ngân Hàng Gần 5.000 Câu Hỏi 14 Chủ Đề + Sinh Toán Nhẩm Tự Động
+- **14 chủ đề phong phú** trong `src/game/cau-hoi/*.txt`:
+  1. *Lịch sử Việt Nam* (`lich-su-vn.txt`)
+  2. *Địa lý Việt Nam & Thế giới* (`dia-ly.txt`)
+  3. *Văn học Việt Nam* (`van-hoc.txt`)
+  4. *Ca dao, tục ngữ & thành ngữ* (`ca-dao-tuc-ngu.txt`)
+  5. *Khoa cử & Danh nhân* (`khoa-cu-danh-nhan.txt`)
+  6. *Văn hóa & Ẩm thực* (`van-hoa-am-thuc.txt`)
+  7. *Đố mẹo dân gian* (`do-meo.txt`)
+  8. *Khoa học tự nhiên* (`khoa-hoc.txt`)
+  9. *Động vật & Thực vật* (`dong-thuc-vat.txt`)
+  10. *Sức khỏe & Đời sống* (`suc-khoe.txt`)
+  11. *Phát minh & Công nghệ* (`phat-minh.txt`)
+  12. *Nghệ thuật & Âm nhạc* (`nghe-thuat.txt`)
+  13. *Thế giới muôn nơi* (`the-gioi.txt`)
+  14. *Thể thao* (`the-thao.txt`)
+- **Thuật toán chống lặp câu hỏi (`data/da-hoi.json`):** Ghi nhớ thời điểm từng câu hỏi đã xuất hiện qua các buổi live, luôn ưu tiên bốc những câu lâu chưa hỏi nhất.
+- **Máy tự ra đề toán nhẩm (`sinhToan`):** Ở vị trí câu số 3 của mỗi kỳ thi, hệ thống tự động sinh câu toán nhẩm theo cấp độ khó tăng dần (cộng trừ 2 số ➔ nhân cộng ➔ hai phép nhân ➔ bình phương & chia lấy nguyên), không bao giờ trùng lặp.
+
+### 🪑 3.3. Cơ Chế Xếp Chỗ Ngồi 31 Bàn Thi & Tự Động Lọc Người Rời Phòng
+- **Vào bàn ngay lập tức:** Bất kỳ người xem nào **vào phòng** (`member`), **bình luận** (`chat`), **thả tim** (`like`), **tặng quà** (`gift`) hoặc **follow** kênh đều được hệ thống xếp vào 1 trong **31 bàn thi** trên sân (hoặc đi lại ở lối giữa nếu 31 bàn đã kín).
+- **Quy tắc 1 — Tự động nhường ghế sau 5 câu treo máy (In-match Idle Eviction):**
+  - Trong ván đang thi, nếu một người ngồi bàn đang có **`0 điểm`** mà suốt **5 câu hỏi liên tiếp** (~1 vòng thi / 3 phút) không trả lời câu nào và không tương tác (không bình luận, không thả tim, không tặng quà), hệ thống hiểu là họ đã lướt sang live khác và **tự động cho rời khỏi bàn** để nhường ghế cho người xem mới.
+- **Quy tắc 2 — Dọn sạch bàn ghế khi bắt đầu ván mới ở Vòng 1 (Match Reset Cleanup):**
+  - Ngay khi kết thúc màn Vinh Quy Bái Tổ và bước vào **Vòng 1 (Khảo Hạch Trường Làng)** của ván mới (hoặc khi chủ kênh bấm **▶ Bắt đầu ván mới ngay** / **Reset game**), hệ thống tự động gọi `xoaChoNgoi()` để làm trống toàn bộ 31 bàn và lối đi.
+  - Những người đã thoát từ ván trước tự động biến mất; khán giả đang xem trực tiếp chỉ cần thả tim hoặc gõ 1 bình luận/đáp án là ngồi vào bàn mới ngay!
+
+### ⚡ 3.4. Chấm Điểm Công Bằng Tuyệt Đối & Tương Tác Đa Chiều
+- **Đồng bộ thời gian gốc từ máy chủ TikTok (`createTime` + `skew`):** Tốc độ trả lời được tính bằng dấu thời gian lúc khán giả bấm nút gửi trên ứng dụng TikTok (đã tự động bù độ lệch đồng hồ `skew`), giúp người xem mạng 4G yếu không bị thiệt thòi so với người mạng cáp quang.
+- **Bảo vệ an toàn nội dung TikTok LIVE 100%:**
+  - Bộ lọc từ cấm nhiều lớp (`src/live/bannedWords.ts`) tự động ẩn biệt danh nhạy cảm.
+  - **Ông Đồ tuyệt đối không bao giờ đọc nguyên văn nội dung bình luận của người xem**, chỉ nhận diện chủ đề (than khó, khen dễ, chào hỏi, xin lời chúc thi cử/sức khỏe/tài lộc) để phản hồi bằng kho câu thoại chuẩn mực có sẵn.
+- **Nhạc cụ dân tộc & Hiệu ứng âm thanh tự tổng hợp (`Web Audio API`):** Tự tạo tiếng đàn tranh ngũ cung, tiếng trống dồn 5 giây cuối, tiếng chiêng đồng công bố đáp án, pháo nổ Vinh Quy Bái Tổ trực tiếp bằng `AudioContext` (`src/game/sfx.ts`) — hoàn toàn **không dính bản quyền âm nhạc**.
+
+---
+
+## 📜 4. Quy Tắc Chơi, Cách Tính Điểm & Xếp Chỗ Ngồi
+
+### 4.1. Cấu Trúc 4 Kỳ Khoa Cử Trong 1 Ván Thi (20 Câu)
+
+Mỗi ván kéo dài khoảng **12 – 15 phút** qua **4 kỳ thi** liên hoàn. Điểm của sĩ tử được cộng dồn xuyên suốt cả 4 kỳ:
+
+| Kỳ Thi | Số Câu | Thời Gian / Câu | Điểm Cơ Bản Tối Đa | Phạt Trả Lời Sai | Đặc Quyền & Sự Kiện Trong Kỳ |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| **Kỳ 1: Khảo Hạch Trường Làng** | Câu 1 – 5 *(5 câu)* | **15 giây** | **+100 điểm** *(tối thiểu +60)* | **−10 điểm** | Câu dễ & đố mẹo nhập môn; làm quen luật thi |
+| **Kỳ 2: Thi Hương** | Câu 6 – 10 *(5 câu)* | **15 giây** | **+150 điểm** *(tối thiểu +90)* | **−20 điểm** | Độ khó trung bình; đổi sang trường thi hàng tổng |
+| **Kỳ 3: Thi Hội** | Câu 11 – 15 *(5 câu)* | **18 giây** | **+220 điểm** *(tối thiểu +132)* | **−35 điểm** | Câu hỏi vận dụng tại Văn Miếu Quốc Tử Giám |
+| **Kỳ 4: Thi Đình** | Câu 16 – 20 *(5 câu)* | **20 giây** | **+320 điểm** *(tối thiểu +192)* | **−50 điểm** | **Thả đủ 200 tim ❤️ cứu trợ cả phòng (loại 2 đáp án sai)** · **Câu 20 Nước Rút ×2 điểm!** |
+
+> **📌 Lưu ý:** Điểm của mỗi sĩ tử không bao giờ bị trừ xuống dưới `0` (`Math.max(0, diem - tru)`).
+
+---
+
+### 4.2. Công Thức Tính Điểm Tốc Độ, Chuỗi Đúng & Câu Lật Kèo
+
+1. **Điểm tốc độ trả lời đúng:**
+   - Trả lời đúng ngay giây đầu tiên nhận **100% điểm tối đa của kỳ** (`D`).
+   - Trả lời đúng ở giây cuối cùng vẫn nhận được **60% điểm tối đa** (`0.6 × D`).
+   - Công thức chính xác trong [`src/game/thi.ts`](src/game/thi.ts):
+     $$\text{Điểm câu} = \text{round}\!\left(D \times \left(1 - 0.4 \times \frac{\text{ms phản hồi}}{\text{Tổng thời gian câu}}\right)\right)$$
+2. **Thưởng chuỗi trả lời đúng liên tiếp (`Streak 🔥`):**
+   - Từ câu đúng liên tiếp thứ 2 trở đi, mỗi câu được cộng thêm **`+10 × (chuỗi − 1)`**, tối đa **`+50 điểm/câu`**.
+   - Trả lời đúng từ 3 câu liên tiếp trở lên sẽ có biểu tượng ngọn lửa **🔥** cạnh bảng tên.
+3. **Câu 20 cuối ván — Nước Rút Lật Kèo (`×2`):**
+   - Ở câu thứ 20 (câu cuối cùng của kỳ Thi Đình), cả **điểm thưởng khi đúng** (tối đa lên tới **+640 điểm**) lẫn **điểm phạt khi sai** (**−100 điểm**) đều được **nhân đôi (`×2`)**, giúp các sĩ tử bám đuổi có cơ hội lật ngược thế cờ vào phút chót.
+
+---
+
+### 4.3. Bảng Lệnh Bình Luận Dành Cho Người Xem
+
+Khán giả tham gia tương tác trực tiếp bằng khung chat và nút thả tim của TikTok:
+
+| Thao Tác Của Người Xem | Cú Pháp Hợp Lệ | Tác Dụng Trong Game |
+| :--- | :--- | :--- |
+| **Chọn đáp án** | `A`, `b`, `C.`, `d)`, `đáp án A`, `chọn B`, `câu C` | Nộp bài thi cho câu đang hỏi. Mỗi câu chỉ tính **lần gõ hợp lệ đầu tiên** của mỗi người. |
+| **Chọn phe 3 miền** | `Bắc`, `Trung`, `Nam` *(hoặc `miền Bắc`, `miền Trung`, `miền Nam`, `Bắc Bộ`, `Nam Bộ`)* | Gia nhập đội tuyển miền. Điểm mỗi câu trả lời đúng của bạn sẽ cộng thêm vào tổng điểm miền đó. |
+| **Chọn nhân vật Nam / Nữ** | `trai`, `nam`, `con trai` hoặc `gái`, `nữ`, `con gái` | Đổi hình dáng nhân vật sĩ tử ngồi bàn và trang phục **Tam Khôi** lúc Vinh Quy Bái Tổ (nếu không gõ, hệ thống tự nhận diện thông minh qua tên). |
+| **Thả tim cứu trợ (Thi Đình)** | Bấm thả tim ❤️ trên màn hình LIVE | Ở **Kỳ 4 (Thi Đình)**, khi cả phòng gom đủ **200 tim** trong một câu hỏi, Ông Đồ sẽ **gạch bỏ 2 đáp án sai (50/50)** cho toàn bộ trường thi. |
+| **Trò chuyện & Xin lời chúc** | `khó quá`, `dễ ợt`, `chào ông đồ`, `haha`, hoặc xin chúc *thi cử, sức khỏe, tài lộc, tình duyên* | Ông Đồ tự động đối đáp, trêu lại vui vẻ hoặc đọc tặng một lời chúc may mắn vào khoảng nghỉ. |
+
+> **⏳ Quy tắc chống lộ đề sớm:** Nếu người xem gõ `A/B/C/D` khi Ông Đồ **vẫn đang đọc đề** (4 ô đáp án chưa mở đồng hồ đếm ngược), bình luận đó chưa tính là nộp bài nhưng người xem vẫn được vào ngồi bàn và **không bị mất lượt** — chỉ cần gõ lại khi 4 đáp án hiện lên.
+
+---
+
+### 4.4. Quy Tắc Xếp Hạng, Bảng Vàng & Huy Hiệu Danh Dự
+
+- **Thứ tự ưu tiên xếp hạng:**
+  1. Tổng điểm cao hơn (`diem` giảm dần)
+  2. Nếu bằng điểm: Tổng thời gian trả lời đúng ngắn hơn (`msDung` tăng dần)
+  3. Nếu vẫn bằng nhau: Vào phòng thi sớm hơn (`vaoLuc` tăng dần)
+- **Ưu tiên vị trí bàn ngồi trên sân:**
+  - **31 sĩ tử dẫn đầu** được ngồi tại 31 bàn gỗ trên sân; những người điểm cao nhất được xếp ngồi **các dãy bàn trung tâm** (hình nhân vật to, bảng tên vàng rực, không bị giao diện TikTok che khuất).
+  - **Top 1, Top 2, Top 3** đang có điểm trên sân được gắn vương miện **👑, 🥈, 🥉** ngay trên bảng tên đầu nhân vật.
+- **Các huy hiệu danh dự trên Bảng Vàng:**
+  - 🏆 **Đầu Bảng Vàng Tuần:** Người đang giữ tổng điểm tích lũy cao nhất trong tuần hiện tại (từ Thứ Hai đến Chủ Nhật).
+  - 🎓 **Đương Kim Trạng Nguyên:** Người vừa đỗ Trạng Nguyên ở ván liền trước.
+  - 🔥 **Chuỗi Thắng Liên Tiếp:** Đang trả lời đúng từ 3 câu liên tiếp trở lên.
+  - 🔴 **B** / 🟡 **T** / 🟢 **N**: Huy hiệu đại diện cho sĩ tử thuộc phe **Miền Bắc – Miền Trung – Miền Nam**.
+
+---
+
+## 🎛️ 5. Bảng Điều Khiển Dành Cho Chủ Kênh (Dashboard)
+
+Khi chạy game, trang điều khiển mở tại **`http://localhost:3007`** cung cấp đầy đủ công cụ quản lý phiên Live cùng màn hình xem trước thời gian thực (im lặng để không vọng tiếng):
+
+- **Kết nối TikTok LIVE:** Nhập `username` TikTok (không cần `@`), bấm **Kết nối**. Hệ thống tự động nhớ tài khoản và tự động kết nối lại nếu mạng chập chờn.
+- **Bộ chọn giọng đọc AI VieNeu-TTS (25 giọng) & Microsoft Edge:**
+  - Hiển thị trạng thái nạp mô hình AI trực tiếp (`🟢 VieNeu AI sẵn sàng (Adam bựa)`).
+  - Cho phép đổi nóng giữa **25 giọng AI VieNeu** hoặc chuyển sang giọng **Microsoft Edge (`NamMinh`)** chỉ bằng 1 cú nhấp chuột.
+- **Tùy biến thương hiệu kênh:**
+  - **Chữ trên mái tranh:** Thay đổi tiêu đề đại tự treo giữa mái trường thi (mặc định: `AI LÀ TRẠNG NGUYÊN`).
+  - **Tên Ông Đồ:** Thay đổi bảng tên trên đầu nhân vật dẫn chương trình (mặc định: `Ông Đồ`).
+  - **Tên kênh xưng hô:** Đổi tên kênh để Ông Đồ nhắc tới khi cảm ơn quà tặng, lượt follow và nhắc chia sẻ phiên live.
+- **Điều khiển trực tiếp ván thi:**
+  - `▶ Bắt đầu ván mới ngay`: Bỏ qua đếm ngược, dọn sạch bàn ghế cũ và bắt đầu ngay Câu 1/20.
+  - `🚫 Bỏ câu này`: Bỏ qua ngay câu hỏi hiện tại (và đánh dấu không bao giờ hỏi lại câu đó nữa).
+  - `Kỳ 1: KHẢO HẠCH` · `Kỳ 2: THI HƯƠNG` · `Kỳ 3: THI HỘI` · `Kỳ 4: THI ĐÌNH`: Chuyển nhanh tới bất kỳ kỳ thi nào để đổi bối cảnh sân thi ngay lập tức.
+  - `Reset game`: Đưa phòng thi về trạng thái đếm ngược chờ ván mới và làm trống toàn bộ chỗ ngồi.
+- **Bộ công cụ giả lập (Test khi chưa bật LIVE):**
+  - Giả lập `1 người`, `60 người`, `500 người` trả lời câu hỏi cùng lúc, hoặc giả lập người vào phòng, thả tim, tặng Hoa hồng / Sư tử để kiểm tra hiệu ứng và âm thanh trước khi lên sóng.
+
+---
+
+## 🚀 6. Hướng Dẫn Cài Đặt & Phát Trực Tiếp (TikTok LIVE Studio)
+
+### 6.1. Yêu Cầu Hệ Thống
+- Hệ điều hành: **Windows 10 / Windows 11 (64-bit)**.
+- **Node.js LTS** (khuyến nghị bản 20 trở lên — tải tại [nodejs.org](https://nodejs.org)).
+- **Python 3.10 – 3.12** (nếu sử dụng bộ giọng AI local `VieNeu-TTS` nhúng sẵn trong thư mục `VieNeu-TTS/.venv`).
+- Phần mềm **TikTok LIVE Studio** đã cấp quyền phát trực tiếp.
+
+### 6.2. Khởi Chạy Chỉ Với 1 Cú Nhấp Đúp
+1. Tải hoặc clone dự án về máy:
+   ```bash
+   git clone https://github.com/duongbirken2510/Live-TrangNguyen.git
+   cd Live-TrangNguyen
+   ```
+2. Nhấp đúp vào file **`BAT-LIVE.bat`** ở thư mục gốc:
+   - Lần đầu tiên chạy, script sẽ tự động kiểm tra và cài đặt `node_modules` nếu chưa có.
+   - Server Express + Vite và tiến trình ngầm **VieNeu-TTS Worker** sẽ tự động khởi động trong **cùng một cửa sổ duy nhất**.
+   - Sau vài giây, trình duyệt tự động mở Bảng điều khiển tại `http://localhost:3007`.
+
+### 6.3. Đưa Màn Hình Game Lên TikTok LIVE Studio
+1. Mở **TikTok LIVE Studio**, chọn khung hình **Dọc (9:16 — 1080 × 1920)**.
+2. Bấm **Thêm nguồn (Add Source)** ➔ chọn **Liên kết (Link / Browser Source)**.
+3. Nhập địa chỉ:
+   ```text
+   http://lvh.me:3007/?view=stage
+   ```
+   *(Lưu ý: Dùng tên miền `lvh.me` thay cho `localhost` vì TikTok LIVE Studio chặn từ khóa `localhost`; `lvh.me` luôn phân giải trực tiếp về `127.0.0.1` trên máy của bạn).*
+4. Đặt độ phân giải nguồn là **`1080 × 1920`** và căn vừa khít khung hình live.
+5. Bấm **Phát trực tiếp (Go LIVE)** trên TikTok LIVE Studio, sau đó quay lại trang `http://localhost:3007` bấm **Kết nối**.
+
+---
+
+## 🛠️ 7. Kiến Trúc Kỹ Thuật & Tự Tùy Chỉnh
+
+### Cấu Trúc Thư Mục Chính
+```text
+LIVE-TRANGNGUYEN/
+├── BAT-LIVE.bat                 # File khởi chạy tất cả trong 1 (Server + VieNeu AI Worker)
+├── server.ts                    # Backend Express, kết nối TikTok LIVE, SSE, nhúng VieNeu stdio worker
+├── tools/
+│   ├── vieneu-worker.py         # Tiến trình Python chạy VieNeu-TTS v3 Turbo (ONNX INT8) qua đường ống nhị phân
+│   ├── kiem-tra-cau-hoi.mjs     # Công cụ kiểm tra cú pháp và trùng lặp ngân hàng câu hỏi
+│   ├── tach-nen.mjs             # Công cụ tách nền nhân vật Ông Đồ & Tam Khôi
+│   └── cat-nhan-vat.mjs         # Công cụ cắt sprite nhân vật sân thi
+├── public/assets/
+│   ├── bg/                      # 4 ảnh nền 1080x1920: nen2.jpg, nen-huong.jpg, nen-hoi.jpg, nen-dinh.jpg
+│   └── nv/                      # Sprite Ông Đồ (mc/), Tam Khôi (top/), Sĩ tử & Dân làng (lang/)
+├── src/
+│   ├── game/
+│   │   ├── thi.ts               # Lõi máy trạng thái (State Machine) của kỳ thi, chấm điểm & xếp ghế
+│   │   ├── thi.check.ts         # Bộ kiểm thử tự động (Unit Tests) cho toàn bộ luật chơi & chỗ ngồi
+│   │   ├── GameStage.tsx        # Giao diện sân khấu 1080x1920, 4 bối cảnh, hiệu ứng lá/hoa/sao & nhân vật
+│   │   ├── GameControls.tsx     # Các nút điều khiển chuyên biệt của game trên Dashboard
+│   │   ├── useGame.ts           # Hook kết nối sự kiện TikTok LIVE với lõi KyThi & điều phối giọng đọc
+│   │   ├── config.ts            # Toàn bộ cấu hình điểm số, thời gian, lời thoại Ông Đồ & menu quà tặng
+│   │   ├── sfx.ts               # Bộ tổng hợp nhạc cụ dân tộc & hiệu ứng âm thanh bằng Web Audio API
+│   │   └── cau-hoi/*.txt        # 14 file ngân hàng câu hỏi chia theo chủ đề và 5 cấp độ khó
+│   └── live/
+│       ├── Dashboard.tsx        # Giao diện trang điều khiển trung tâm & chọn 25 giọng VieNeu AI
+│       ├── voice.ts             # Hàng đợi phát âm thanh 2 làn ưu tiên & cơ chế prefetch trước
+│       └── bannedWords.ts       # Bộ lọc từ ngữ vi phạm tiêu chuẩn cộng đồng
+└── data/                        # Lưu trữ tự động cài đặt kênh, câu hỏi đã dùng và Bảng Vàng Tuần
 ```
 
-### Bước 3: Chạy game
+### Các Lệnh Kiểm Tra Dành Cho Lập Trình Viên
+```bash
+# Chạy server phát triển (kèm VieNeu-TTS Worker)
+npm run dev
 
-1. Mở thư mục game, **bấm đúp `BAT-LIVE.bat`**.
-2. **Lần đầu** máy sẽ tự cài thư viện, mất khoảng 1 đến 3 phút tuỳ mạng. Các lần sau mở ngay.
-3. Khoảng 8 giây sau, trình duyệt tự mở **trang điều khiển** ở `http://localhost:3007`.
-4. **Để cửa sổ đen của BAT-LIVE mở suốt buổi live.** Đóng cửa sổ đó là tắt game.
+# Chạy bộ kiểm thử tự động lõi luật chơi & quy tắc xếp ghế
+npx tsx src/game/thi.check.ts
 
-### Bước 4: Gắn game vào TikTok LIVE Studio
+# Kiểm tra ngân hàng gần 5.000 câu hỏi
+node tools/kiem-tra-cau-hoi.mjs
 
-1. Mở TikTok LIVE Studio, chọn bố cục **dọc**.
-2. Thêm nguồn (Add source), chọn **Link** (hoặc Trình duyệt).
-3. Dán địa chỉ: `http://lvh.me:3007/?view=stage`
-4. Đặt kích thước **1080 × 1920**, kéo cho kín khung hình.
+# Kiểm tra kiểu dữ liệu TypeScript
+npm run lint
+```
 
-Phải dùng `lvh.me` chứ không dùng `localhost`, vì LIVE Studio không nhận chữ localhost. `lvh.me` vẫn trỏ về chính máy bạn.
+---
 
-### Bước 5: Lên live và kết nối
+## ❓ 8. Xử Lý Sự Cố Thường Gặp (FAQ)
 
-1. Bấm **Phát trực tiếp** trong LIVE Studio trước.
-2. Trên trang điều khiển, nhập **tên TikTok** của bạn (phần sau chữ @), bấm **Kết nối**.
-3. Thấy chữ "Đã kết nối" là xong. Game tự đếm ngược và bắt đầu ván đầu tiên.
+- **Mở trang stage trên trình duyệt Chrome mà chưa nghe tiếng Ông Đồ?**
+  - Trình duyệt Chrome chặn tự phát âm thanh cho tới khi bạn nhấp chuột 1 lần vào trang. Khi gắn vào **TikTok LIVE Studio**, âm thanh tự động phát ngay mà không cần nhấp.
+- **Không kết nối được tài khoản TikTok?**
+  - Hãy đảm bảo bạn đã bấm **Phát trực tiếp** trong TikTok LIVE Studio trước khi bấm nút **Kết nối** trên Dashboard. Nếu mất mạng tạm thời, server sẽ tự động kết nối lại sau mỗi `15s ➔ 30s ➔ 60s`.
+- **Muốn thêm hoặc sửa câu hỏi thì làm thế nào?**
+  - Mở bất kỳ file `.txt` nào trong `src/game/cau-hoi/` bằng Notepad. Mỗi dòng viết theo cú pháp:
+    `Câu hỏi | ĐÁP ÁN ĐÚNG | Đáp án sai 1 | Đáp án sai 2 | Đáp án sai 3`
+    (Đáp án đúng luôn đặt ở cột thứ 2; game sẽ tự động trộn ngẫu nhiên vị trí A, B, C, D khi lên hình).
 
-Server nhớ tài khoản này. Lần sau mở BAT-LIVE là nó tự kết nối lại. Muốn đổi tài khoản thì bấm **Ngắt** rồi nhập tên mới.
+---
 
-### Chưa live mà muốn thử
+## 📄 Giấy Phép & Liên Hệ
 
-Trên trang điều khiển có các nút **Giả lập 1 người / 60 người / 500 người**. Bấm lúc màn hình đang hiện 4 đáp án để xem game chạy thế nào. Trang điều khiển có ô xem trước, không phát tiếng.
-
-## Người xem gõ gì
-
-| Gõ vào bình luận | Tác dụng |
-|---|---|
-| `A`, `b`, `C.`, `đáp án d`, `chọn a` | Trả lời câu hỏi. Chỉ tính lần gõ đầu tiên của mỗi câu, chữ hoa chữ thường đều được |
-| `Bắc`, `Trung`, `Nam` (hoặc `miền Bắc`, `nam bộ`) | Vào phe thi đua 3 miền |
-| `trai`, `gái` (hoặc `con trai`, `con gái`, `nữ`) | Chọn nhân vật nam hay nữ khi đỗ tam khôi. Không gõ thì game tự đoán theo tên |
-| Thả tim | Ở thi Đình, đủ 200 tim trong một câu thì loại 2 đáp án sai |
-| `khó quá`, `dễ quá`, `chào ông đồ`, `haha`... | Ông đồ có thể trêu lại vào lúc rảnh |
-
-Đáp án gõ **lúc ông đồ còn đang đọc đề** (4 ô chưa hiện) thì không tính. Người chơi không mất lượt, gõ lại sau khi 4 ô hiện ra là được.
-
-## Nút trên trang điều khiển
-
-- **Bắt đầu ván mới ngay**: bỏ qua phần đếm ngược.
-- **Bỏ câu này**: gặp câu sai hoặc câu gây cãi thì bấm. Câu đó bị bỏ qua và không bao giờ được hỏi lại.
-- **Đọc ngay**: gõ một câu để ông đồ đọc (ví dụ thông báo giờ live sau).
-- **Tốc độ giọng**, **Tên kênh**: tuỳ chỉnh giọng đọc và tên kênh ông đồ nhắc tới.
-
-## Giọng đọc
-
-**Mặc định** game dùng giọng nam **Edge (NamMinh)**: miễn phí, chỉ cần có mạng, không phải cài gì thêm. Edge lỗi thì game tự chuyển sang giọng Google.
-
-**Muốn giọng "Adam bựa" có cười, thở dài** như bản của tác giả, bạn cài thêm [VieNeu-TTS](https://github.com/pnnbao97/VieNeu-TTS), bộ đọc tiếng Việt mã nguồn mở chạy ngay trên máy:
-
-1. Cài VieNeu-TTS theo hướng dẫn trong repo của họ. Máy có card NVIDIA sẽ đọc nhanh; máy chỉ có CPU vẫn chạy được nhưng chậm hơn.
-2. Mở `BAT-LIVE.bat` bằng Notepad, sửa dòng `set VIENEU_DIR=E:\02_AI\VieNeu-TTS` thành thư mục bạn đã cài.
-3. Lưu lại, bấm đúp BAT-LIVE như bình thường. Nó sẽ tự mở thêm cửa sổ "Giọng VieNeu". Đang live thì đừng tắt cửa sổ đó.
-
-VieNeu tắt hoặc lỗi giữa chừng thì game tự quay về giọng Edge, ông đồ không bị câm.
-
-## Tự chỉnh game
-
-Các file bạn hay sửa nhất đều mở được bằng Notepad. Sửa xong thì làm mới trang stage trong LIVE Studio (chuột phải vào nguồn, chọn Làm mới).
-
-- **Câu hỏi**: `src/game/cau-hoi/*.txt`, mỗi chủ đề một file. Mỗi dòng một câu:
-  ```
-  câu hỏi | ĐÁP ÁN ĐÚNG | sai | sai | sai
-  ```
-  Đáp án đúng luôn để ở vị trí thứ hai, game tự xáo A B C D. Dòng `[de]`, `[vua]`, `[kho]`, `[dinh]`, `[meo]` là nhóm độ khó (khảo hạch, thi Hương, thi Hội, thi Đình, đố mẹo). Quy tắc viết câu có ở `src/game/cau-hoi/HUONG-DAN.md`. Viết xong chạy `node tools/kiem-tra-cau-hoi.mjs` để soát lỗi.
-- **Lời ông đồ, số liệu luật chơi**: `src/game/config.ts`. Mọi câu ông đồ nói, thời gian từng kỳ, điểm, số tim cứu trợ... đều ở đây.
-- **Ảnh**: nền ở `public/assets/bg/nen2.jpg` (1080 × 1920). Ảnh ông đồ gốc ở `public/assets/MC/`, tam khôi ở `public/assets/top/`, sĩ tử, trẻ con và các cụ ở `public/assets/nhan-vat/`. Thay ảnh xong thì chạy `node tools/tach-nen.mjs` (ông đồ, tam khôi) hoặc `node tools/cat-nhan-vat.mjs` (nhân vật sân thi) để tách nền trắng.
-
-## Gặp lỗi thì sao
-
-- **Không nghe tiếng ông đồ**: nếu mở trang stage bằng Chrome để thử, bấm vào trang một lần (Chrome chặn tự phát tiếng tới lúc bạn bấm). Trong LIVE Studio thì không bị chặn.
-- **Nghe hai giọng chồng nhau**: bạn đang mở trang stage ở hai chỗ. Game chỉ cho trang mở sau cùng phát tiếng, nhưng tốt nhất chỉ mở trong LIVE Studio.
-- **Không kết nối được TikTok**: phải bấm Phát trực tiếp trong LIVE Studio trước rồi mới kết nối. Server sẽ tự thử lại 15 giây, 30 giây, 1 phút, tối đa 2 phút một lần.
-- **Cửa sổ BAT báo cổng 3007 đang bận**: đang có một bản game khác chạy. Đóng hết cửa sổ BAT-LIVE cũ rồi mở lại.
-- **Gặp câu hỏi sai**: bấm "Bỏ câu này" ở trang điều khiển. Bộ câu do AI viết rồi soát lại, gần 5.000 câu nên khó tránh sót vài câu.
-
-## Cho người biết code
-
-- Node.js + TypeScript. Server `server.ts` (Express), giao diện React 19 + Vite + Tailwind 4, hiệu ứng `motion`, kết nối TikTok bằng `tiktok-live-connector` 2.x.
-- Lõi luật chơi: `src/game/thi.ts` (không phụ thuộc React). Kiểm tra: `npx tsx src/game/thi.check.ts`.
-- Màn hình 1080 × 1920: `src/game/GameStage.tsx`. Âm thanh tự tạo bằng Web Audio: `src/game/sfx.ts`.
-- Server chỉ nghe `127.0.0.1`, người cùng mạng Wi-Fi không điều khiển được.
-- Cổng 3007, đổi được bằng biến `PORT`.
-
-## Giấy phép
-
-Mã nguồn dùng giấy phép [MIT](LICENSE). Ảnh ông đồ, ảnh tam khôi và ảnh nền (`public/assets/`, `ai-la-trang-nguyen.png`) thuộc về tác giả. Muốn dùng cho kênh của mình thì nên thay bằng ảnh riêng.
-
-Game lấy cảm hứng từ các game show đố vui trên truyền hình nhưng không dùng tên, giao diện, nhạc hay câu thoại của chương trình nào.
+- Dự án được phát triển và nâng cấp bởi **Duong Birken** — [https://duongbirken.deta.vn](https://duongbirken.deta.vn)
+- Kho mã nguồn: [https://github.com/duongbirken2510/Live-TrangNguyen](https://github.com/duongbirken2510/Live-TrangNguyen)
+- Giấy phép mã nguồn: [MIT License](LICENSE).

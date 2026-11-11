@@ -231,6 +231,8 @@ async function connectTikTok(cleanUser: string) {
   });
 
   conn.on(WebcastEvent.CHAT, (data: any) => {
+    const rawCreate = Number(data?.common?.createTime) || 0;
+    const createTime = rawCreate > 0 && rawCreate < 1e11 ? rawCreate * 1000 : (rawCreate || Date.now());
     broadcast('chat', {
       username: userOf(data),
       nickname: nickOf(data),
@@ -238,7 +240,7 @@ async function connectTikTok(cleanUser: string) {
       avatar: avatarOf(data),
       timestamp: Date.now(),
       // giờ TikTok gắn lúc người xem gửi (ms): xếp ai trả lời nhanh nhất theo giờ này, không theo lúc bot nhận
-      createTime: Number(data?.common?.createTime) || Date.now(),
+      createTime,
     });
   });
 

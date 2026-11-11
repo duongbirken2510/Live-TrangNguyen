@@ -294,3 +294,30 @@ import { loaiCmt, Treu } from './treu';
   assert.ok(thach >= 2 && thach <= 16, `số câu thách ${thach}`);
   console.log('co vu + thach thuc: OK');
 }
+
+// Quản lý chỗ ngồi: (1) 0 điểm im lặng 5 câu liền tự rời bàn; (2) sang ván mới xoá sạch bàn
+{
+  let t6 = 40_000_000;
+  const k8 = new KyThi(bank);
+  const go = (ms: number) => { t6 += ms; k8.tick(t6); };
+  k8.batDau(t6);
+  go(GAME.vongSec * 1000);
+  // 'vang' vào phòng câu 1 rồi im lặng suốt 5 câu; 'coDiem' đúng câu 1 rồi im lặng
+  k8.vaoPhong({ id: 'vang', name: 'Vắng' }, t6);
+  for (let c = 0; c < 5; c++) {
+    k8.docXong(t6);
+    if (c === 0) k8.chat({ id: 'coDiem', name: 'Có Điểm', avatar: '', comment: 'ABCD'[k8.cau!.ans] }, t6);
+    go(k8['vong'].giay * 1000);
+    go(GAME.chotSec * 1000);
+    if (c < 4) {
+      assert.equal(k8.siTu.has('vang'), true, `câu ${c + 1} chưa đủ 5 câu nên vẫn còn ghế`);
+      go(GAME.dapAnSec * 1000);
+    }
+  }
+  assert.equal(k8.siTu.has('vang'), false, '0 điểm im lặng đủ 5 câu -> tự rời bàn');
+  assert.equal(k8.siTu.has('coDiem'), true, 'đã có điểm -> vẫn giữ ghế');
+  // Bắt đầu ván mới (về lại Vòng 1): xoá sạch toàn bộ chỗ ngồi cũ
+  k8.batDau(t6);
+  assert.equal(k8.siTu.size, 0, 'sang ván mới xoá sạch bàn');
+  console.log('cho ngoi (2 quy tac): OK');
+}

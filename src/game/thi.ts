@@ -42,9 +42,9 @@ export function parseMc(text: string, errors: string[] = []): McQ[] {
 export const plain = (s: string) =>
   s.normalize('NFD').replace(/\p{M}/gu, '').replace(/[đĐ]/g, 'd').toLowerCase().replace(/[^a-z0-9]/g, '');
 
-/** "a", "C.", "đáp án b", "chọn D", "câu c" -> 0..3; câu nói thường -> null */
+/** "a", "C.", "đáp án b", "chọn D", "câu c", "A nhé" -> 0..3; câu nói thường -> null */
 export function choiceOf(comment: string): number | null {
-  const m = /^(?:dapan|chon|cau)?([abcd])$/.exec(plain(comment));
+  const m = /^(?:dapan|phuongan|chon|cau|la|dapancau|choncau)?([abcd])(?:nhe|nha|di|a|luon|dung)?$/.exec(plain(comment));
   return m ? 'abcd'.indexOf(m[1]) : null;
 }
 
@@ -66,6 +66,7 @@ export interface SiTu {
   vaoLuc: number;
   gain: number; // điểm câu vừa rồi (để hiện +/-)
   saiLien?: number; // sai liền mấy câu (để ông đồ trêu)
+  boQua?: number; // số câu liên tiếp không tương tác / không trả lời (đang 0 điểm mà >= 5 câu thì tự rời bàn)
 }
 
 interface Cau {
@@ -194,14 +195,43 @@ export class KyThi {
     this.events.push({ t: 'cho' });
   }
 
+  /** Xoá toàn bộ chỗ ngồi và người chạy trên sân */
+  xoaChoNgoi() {
+    this.siTu.clear();
+    this.khach = [];
+  }
+
+  /** Bắt đầu ván mới (về lại Kỳ 1 - Khảo hạch trường làng): xoá toàn bộ chỗ ngồi cũ để xếp lại từ đầu */
   batDau(now: number) {
     this.trangTruoc = this.trangMoi;
     this.dauTruoc = null;
     this.dauBaoCau = -99;
     this.mienBaoCau = 0;
-    this.siTu.clear();
+    this.xoaChoNgoi();
     this.cauList = this.chonCau(now);
     this.idx = 0;
+    this.moVong(now);
+  }
+
+  /** Người xem mới vào phòng hoặc tương tác: xếp vào ngồi bàn ngay và đặt lại bộ đếm vắng mặt */
+  vaoPhong(e: { id: string; name: string; avatar?: string }, now: number) {
+    if (!e.id || !e.name) return;
+    const s = this.siTu.get(e.id);
+    if (s) {
+      s.name = e.name;
+      if (e.avatar) s.avatar = e.avatar;
+      s.boQua = 0;
+    } else {
+      this.siTu.set(e.id, { id: e.id, name: e.name, avatar: e.avatar || '', diem: 0, chuoi: 0, msDung: 0, vaoLuc: now, gain: 0, boQua: 0 });
+    }
+  }
+
+  /** Nhảy thẳng tới đầu kỳ thi (0..3) để chủ kênh chuyển vòng hoặc xem bối cảnh */
+  chuyenVong(vongIdx: number, now: number) {
+    if (this.cauList.length === 0) this.cauList = this.chonCau(now);
+    const target = this.cauList.findIndex((c) => c.vong === vongIdx);
+    if (target === -1) return;
+    this.idx = target;
     this.moVong(now);
   }
 
@@ -326,11 +356,12 @@ export class KyThi {
    * Trả về true nếu được tính là bài nộp.
    */
   chat(e: { id: string; name: string; avatar: string; comment: string; createTime?: number }, now: number) {
-    // ai bình luận cũng được nhớ tên (để chạy trên sân thành đám trẻ nếu chưa có ghế)
+    // ai bình luận cũng được vào ngồi bàn ngay (nếu trong top 31 ghế) hoặc chạy ở lối giữa nếu hết ghế
+    this.vaoPhong(e, now);
     this.khach = [{ id: e.id, name: e.name }, ...this.khach.filter((k) => k.id !== e.id)].slice(0, 12);
     if (e.createTime) {
       const d = now - e.createTime;
-      this.skew = this.skewN ? Math.min(this.skew + 5, d) : d;
+      this.skew = this.skewN && Math.abs(d - this.skew) < 10_000 ? Math.min(this.skew + 5, d) : d;
       this.skewN++;
     }
     const g = lenhGioi(e.comment);
@@ -351,13 +382,6 @@ export class KyThi {
     const total = this.vong.giay * 1000;
     this.answers.set(e.id, { chon, ms: Math.max(0, Math.min(total, sentAt - this.shownAt)) });
     this.counts[chon]++;
-    const s = this.siTu.get(e.id);
-    if (s) {
-      s.name = e.name;
-      s.avatar = e.avatar || s.avatar;
-    } else {
-      this.siTu.set(e.id, { id: e.id, name: e.name, avatar: e.avatar, diem: 0, chuoi: 0, msDung: 0, vaoLuc: now, gain: 0 });
-    }
     this.recent = [e.name, ...this.recent.filter((n) => n !== e.name)].slice(0, 5);
     return true;
   }
@@ -406,8 +430,15 @@ export class KyThi {
       const a = this.answers.get(s.id);
       if (!a) {
         s.chuoi = 0; // bỏ câu thì mất chuỗi
+        s.boQua = (s.boQua ?? 0) + 1;
+        // Đang 0 điểm mà suốt 5 câu liên tiếp không trả lời / không tương tác -> tự rời bàn nhường chỗ
+        if (s.diem === 0 && s.boQua >= 5) {
+          this.siTu.delete(s.id);
+          this.khach = this.khach.filter((k) => k.id !== s.id);
+        }
         continue;
       }
+      s.boQua = 0;
       if (a.chon === c.ans) {
         let p = diemDung(v.diem, a.ms, total) * nhan;
         s.chuoi++;

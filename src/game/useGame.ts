@@ -32,6 +32,15 @@ export function useGame() {
   const [caiDatGoc, setCaiDat] = useState({ tieuDe: '', tenOngDo: '' });
   const caiDat = { tieuDe: caiDatGoc.tieuDe || GAME.tieuDeMacDinh, tenOngDo: caiDatGoc.tenOngDo || GAME.tenOngDoMacDinh };
   const [room] = useState(() => new KyThi(BANK));
+  if (Object.getPrototypeOf(room) !== KyThi.prototype) {
+    Object.setPrototypeOf(room, KyThi.prototype);
+    // Khi nạp nóng (HMR): xoá ngay các sĩ tử 0 điểm tồn đọng từ ván/phiên trước
+    const cutoff = Date.now() - 3 * 60 * 1000;
+    for (const [id, s] of room.siTu) {
+      if (s.diem === 0 && s.vaoLuc < cutoff) room.siTu.delete(id);
+    }
+    room.khach = [];
+  }
   if (import.meta.env.DEV) Object.assign(window as any, { __room: room, __sfx: sfx }); // để thử các màn trong trình duyệt
   const [talk] = useState(() => ({
     greeter: new NameBatcher(
@@ -143,6 +152,7 @@ export function useGame() {
     onGift: (e) => {
       if (!IS_STAGE) return;
       const name = safeName(e.nickname, e.username);
+      room.vaoPhong({ id: e.username, name, avatar: e.avatar }, Date.now());
       const coins = e.diamondCount * e.repeatCount;
       // băng rôn cảm ơn trên màn hình (người tặng thấy mình); quà KHÔNG cho lợi thế trong game
       room.tangQua({ id: e.username, name, avatar: e.avatar, gift: e.giftName, count: e.repeatCount, coins, big: coins >= GAME.bigGiftCoins }, Date.now());
@@ -161,18 +171,25 @@ export function useGame() {
 
     onMember: (e) => {
       if (!IS_STAGE) return;
-      const spoken = speakableName(safeName(e.nickname, e.username));
+      const name = safeName(e.nickname, e.username);
+      room.vaoPhong({ id: e.username, name, avatar: e.avatar }, Date.now());
+      const spoken = speakableName(name);
       if (spoken !== 'bạn') talk.greeter.add(e.username, spoken);
     },
 
-    // Tim: Thi Đình đủ tim thì cứu trợ cả phòng (loại 2 đáp án sai)
+    // Tim: giữ chỗ ngồi cho người đang thả tim + ở Thi Đình đủ tim thì cứu trợ cả phòng (loại 2 đáp án sai)
     onLike: (e) => {
-      if (IS_STAGE) room.tim(e.likeCount);
+      if (!IS_STAGE) return;
+      const name = safeName(e.nickname, e.username);
+      room.vaoPhong({ id: e.username, name }, Date.now());
+      room.tim(e.likeCount);
     },
 
     onFollow: (e) => {
       if (!IS_STAGE) return;
-      if (talk.follows.first(e.username)) voice.say(GAME.thankFollow(speakableName(safeName(e.nickname, e.username)), kenh.current));
+      const name = safeName(e.nickname, e.username);
+      room.vaoPhong({ id: e.username, name, avatar: e.avatar }, Date.now());
+      if (talk.follows.first(e.username)) voice.say(GAME.thankFollow(speakableName(name), kenh.current));
     },
 
     onControl: (c) => {
@@ -184,6 +201,7 @@ export function useGame() {
       if (c.action === 'setVoice') voice.clearPrefetch();
       if (c.action === 'reset') {
         voice.stop();
+        room.xoaChoNgoi();
         room.cho(now);
       }
       if (c.action === 'custom' && c.text === 'batdau') {
@@ -193,6 +211,13 @@ export function useGame() {
       if (c.action === 'custom' && c.text === 'bocau') {
         room.boCau(now);
         void post('/api/da-hoi', room.used); // nhớ câu bị bỏ, tắt bật lại vẫn không hỏi
+      }
+      if (c.action === 'custom' && c.text?.startsWith('vong:')) {
+        const vi = Number(c.text.slice(5));
+        if (Number.isInteger(vi) && vi >= 0 && vi < GAME.vong.length) {
+          voice.stop();
+          room.chuyenVong(vi, now);
+        }
       }
     },
   });
