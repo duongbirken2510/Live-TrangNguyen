@@ -181,6 +181,7 @@ export function useGame() {
       const now = Date.now();
       if (c.action === 'speak' && c.text) voice.say(c.text, true);
       if (c.action === 'setRate' && c.text) voice.rate = Number(c.text) || 1;
+      if (c.action === 'setVoice') voice.clearPrefetch();
       if (c.action === 'reset') {
         voice.stop();
         room.cho(now);

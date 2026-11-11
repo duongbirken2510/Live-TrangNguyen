@@ -1,6 +1,18 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import type { LiveStatus } from './types';
 import { emitTest, sendControl } from './page';
+
+interface VieneuVoice {
+  id: string;
+  name: string;
+  description: string;
+  gender: string;
+}
+interface VieneuStatus {
+  state: 'loading' | 'ready' | 'unavailable';
+  voice: string;
+  voices: VieneuVoice[];
+}
 
 const FAKE_NAMES = ['Lan Anh', 'Minh Tuấn', 'Bé Na 🌸', 'Hoàng Long', 'Thu Trang', 'Quốc Bảo', 'duyanh99', '𝑵𝒈𝒐̣𝒄 𝑨𝒏𝒉'];
 const pick = () => {
@@ -31,6 +43,39 @@ export function Dashboard({
   const [msg, setMsg] = useState('');
   const [speakText, setSpeakText] = useState('');
   const [busy, setBusy] = useState(false);
+  const [vieneu, setVieneu] = useState<VieneuStatus>({ state: 'loading', voice: 'Adam bựa', voices: [] });
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const load = () => {
+      fetch('/api/tts/status')
+        .then((r) => r.json())
+        .then((d: VieneuStatus) => {
+          setVieneu(d);
+          if (d.state === 'loading') timer = setTimeout(load, 2000);
+        })
+        .catch(() => {});
+    };
+    load();
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, []);
+
+  const changeVoice = async (newVoice: string) => {
+    setVieneu((prev) => ({ ...prev, voice: newVoice }));
+    try {
+      const r = await fetch('/api/tts/voice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ voice: newVoice }),
+      }).then((x) => x.json());
+      if (r.state) setVieneu(r);
+      setMsg(newVoice ? `Đã đổi sang giọng AI VieNeu: ${newVoice}` : 'Đã đổi sang giọng Microsoft Edge (NamMinh)');
+    } catch (e) {
+      setMsg(String(e));
+    }
+  };
 
   const connect = async () => {
     setBusy(true);
@@ -102,6 +147,39 @@ export function Dashboard({
           </Card>
 
           <Card title="Giọng đọc trên stage">
+            <div className="mb-3 rounded-xl bg-slate-800/70 p-3 text-sm ring-1 ring-slate-700/60">
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <span className="font-medium text-slate-200">Bộ giọng đọc Ông Đồ:</span>
+                {vieneu.state === 'loading' ? (
+                  <span className="rounded-full bg-amber-500/20 px-2.5 py-0.5 text-xs font-medium text-amber-300">
+                    ⏳ Đang nạp model AI VieNeu (~10s)...
+                  </span>
+                ) : vieneu.state === 'ready' && vieneu.voice ? (
+                  <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-xs font-medium text-emerald-300">
+                    🟢 VieNeu AI sẵn sàng ({vieneu.voice})
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-sky-500/20 px-2.5 py-0.5 text-xs font-medium text-sky-300">
+                    🔵 Đang dùng Microsoft Edge (NamMinh)
+                  </span>
+                )}
+              </div>
+              <select
+                className="w-full rounded-lg bg-slate-900 px-3 py-2 text-sm text-slate-100 ring-1 ring-slate-700 focus:ring-amber-400"
+                value={vieneu.voice}
+                onChange={(e) => changeVoice(e.target.value)}
+              >
+                {(vieneu.voices.length > 0
+                  ? vieneu.voices
+                  : [{ id: 'Adam bựa', name: 'Adam bựa', description: 'Nam · Bắc · Phong cách tự nhiên', gender: 'male' }]
+                ).map((v) => (
+                  <option key={v.id} value={v.id}>
+                    🎙️ VieNeu AI: {v.name} {v.description ? `— ${v.description}` : ''}
+                  </option>
+                ))}
+                <option value="">🌐 Microsoft Edge (NamMinh — nhẹ, không dùng AI local)</option>
+              </select>
+            </div>
             <div className="mb-3 flex flex-wrap items-center gap-2 text-sm">
               <span>
                 Tên kênh: <b className="text-amber-300">{channelName}</b>

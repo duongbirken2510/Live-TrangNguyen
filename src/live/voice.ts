@@ -44,14 +44,37 @@ class Voice {
 
   /** Tạo giọng trước (server giữ sẵn), tới lúc đọc thì phát ngay không phải chờ */
   private daTao = new Set<string>();
+  private prefetchQueue: string[] = [];
+  private prefetching = false;
   prefetch(text: string) {
     const t = text.trim();
     if (!this.enabled || !t || this.daTao.has(t)) return;
     this.daTao.add(t);
     if (this.daTao.size > 300) this.daTao.clear();
-    fetch(`/api/tts?rate=${this.rate}&text=${encodeURIComponent(t)}`)
-      .then((r) => r.arrayBuffer())
-      .catch(() => this.daTao.delete(t));
+    this.prefetchQueue.unshift(t);
+    void this.runPrefetch();
+  }
+
+  private async runPrefetch() {
+    if (this.prefetching) return;
+    this.prefetching = true;
+    try {
+      while (this.prefetchQueue.length > 0) {
+        const t = this.prefetchQueue.shift()!;
+        try {
+          const r = await fetch(`/api/tts?prefetch=1&rate=${this.rate}&text=${encodeURIComponent(t)}`);
+          await r.arrayBuffer();
+        } catch {
+          this.daTao.delete(t);
+        }
+      }
+    } finally {
+      this.prefetching = false;
+    }
+  }
+
+  clearPrefetch() {
+    this.daTao.clear();
   }
 
   stop() {

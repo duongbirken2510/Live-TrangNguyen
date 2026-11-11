@@ -12,6 +12,8 @@ import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
+import { spawn, type ChildProcessByStdio } from 'child_process';
+import type { Readable, Writable } from 'stream';
 import { fileURLToPath } from 'url';
 import { TikTokLiveConnection, WebcastEvent, ControlEvent } from 'tiktok-live-connector';
 import { MsEdgeTTS, OUTPUT_FORMAT } from 'msedge-tts';
@@ -73,7 +75,7 @@ const SETTINGS_FILE = path.join(__dirname, 'settings.json');
 let lastNameControl: { action: string; text: string } | null = null;
 // tài khoản TikTok đang cần giữ kết nối: rớt thì tự kết nối lại, tắt server bật lại cũng tự kết nối
 let wantUser = '';
-let settings: { channelName?: string; tiktokUser?: string; tieuDe?: string; tenOngDo?: string } = {};
+let settings: { channelName?: string; tiktokUser?: string; tieuDe?: string; tenOngDo?: string; vieneuVoice?: string } = {};
 try {
   settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'));
   if (typeof settings.channelName === 'string' && settings.channelName.trim()) {
@@ -110,6 +112,7 @@ app.get('/api/tiktok/events', (req, res) => {
   res.flushHeaders?.();
   res.write(`event: status\ndata: ${JSON.stringify(liveStats)}\n\n`);
   res.write(`event: caiDat\ndata: ${JSON.stringify(caiDat())}\n\n`);
+  res.write(`event: vieneu\ndata: ${JSON.stringify(getVieneuStatus())}\n\n`);
   if (lastRateControl) res.write(`event: control\ndata: ${JSON.stringify(lastRateControl)}\n\n`);
   if (lastNameControl) res.write(`event: control\ndata: ${JSON.stringify(lastNameControl)}\n\n`);
   sseClients.push(res);
@@ -527,59 +530,267 @@ async function googleTts(text: string): Promise<Buffer> {
 }
 
 const ttsCache = new Map<string, Buffer>();
-// Giọng VieNeu (E:\02_AI\VieNeu-TTS chạy server ở cổng 8000, card đồ hoạ tạo giọng).
-// Vừa tạo vừa phát nên gần như không phải chờ. VieNeu chưa bật hoặc lỗi thì tự quay về giọng Edge.
-// Đổi giọng: đặt biến VIENEU_VOICE (vd "Thiện Minh"); để trống = chỉ dùng Edge.
-const VIENEU_URL = process.env.VIENEU_URL || 'http://127.0.0.1:8000';
-const VIENEU_VOICE = process.env.VIENEU_VOICE ?? 'Adam bựa';
+// ---------- Giọng đọc AI VieNeu-TTS tích hợp trực tiếp (Subprocess stdio pipe, không cần mở cổng riêng) ----------
+interface VieneuVoiceInfo {
+  id: string;
+  name: string;
+  description: string;
+  gender: string;
+}
+interface VieneuJob {
+  id: number;
+  text: string;
+  voice: string;
+  res: express.Response;
+  parts: Buffer[];
+  timer: ReturnType<typeof setTimeout>;
+  resolve: (ok: boolean) => void;
+}
+
+let activeVieneuVoice = settings.vieneuVoice !== undefined ? settings.vieneuVoice : (process.env.VIENEU_VOICE ?? 'Adam bựa');
+let vieneuState: 'loading' | 'ready' | 'unavailable' = 'loading';
+let vieneuVoices: VieneuVoiceInfo[] = [];
 const vieneuCache = new Map<string, Buffer>();
-async function vieneuTts(text: string, res: express.Response): Promise<boolean> {
-  const cached = vieneuCache.get(text);
+let vieneuProc: ChildProcessByStdio<Writable, Readable, null> | null = null;
+let nextJobId = 1;
+let currentJob: VieneuJob | null = null;
+const priorityJobs: VieneuJob[] = [];
+const prefetchJobs: VieneuJob[] = [];
+
+const getVieneuStatus = () => ({
+  state: vieneuState,
+  voice: activeVieneuVoice,
+  voices: vieneuVoices,
+});
+
+function pumpVieneuQueue() {
+  if (currentJob || vieneuState !== 'ready' || !vieneuProc?.stdin.writable) return;
+  while (priorityJobs.length > 0 || prefetchJobs.length > 0) {
+    const job = priorityJobs.shift() ?? prefetchJobs.shift()!;
+    if (job.res.writableEnded || job.res.destroyed) {
+      clearTimeout(job.timer);
+      job.resolve(true);
+      continue;
+    }
+    const cacheKey = `${job.voice}|${job.text}`;
+    const cached = vieneuCache.get(cacheKey);
+    if (cached) {
+      clearTimeout(job.timer);
+      job.res.setHeader('Content-Type', 'audio/wav');
+      job.res.send(cached);
+      job.resolve(true);
+      continue;
+    }
+    currentJob = job;
+    try {
+      vieneuProc.stdin.write(JSON.stringify({ id: job.id, text: job.text, voice: job.voice }) + '\n');
+      return;
+    } catch {
+      clearTimeout(job.timer);
+      currentJob = null;
+      job.resolve(false);
+    }
+  }
+}
+
+function startVieneuWorker() {
+  const vieneuDir = process.env.VIENEU_DIR || path.join(__dirname, 'VieNeu-TTS');
+  const pyExe = path.join(vieneuDir, '.venv', 'Scripts', 'python.exe');
+  const workerScript = path.join(__dirname, 'tools', 'vieneu-worker.py');
+  if (!fs.existsSync(pyExe) || !fs.existsSync(workerScript)) {
+    console.log('[VieNeu] Không tìm thấy môi trường Python VieNeu-TTS, dùng giọng Microsoft Edge.');
+    vieneuState = 'unavailable';
+    broadcast('vieneu', getVieneuStatus());
+    return;
+  }
+
+  vieneuState = 'loading';
+  broadcast('vieneu', getVieneuStatus());
+
+  const proc = spawn(pyExe, ['-u', workerScript], {
+    cwd: vieneuDir,
+    stdio: ['pipe', 'pipe', 'inherit'],
+    windowsHide: true,
+    env: {
+      ...process.env,
+      PYTHONIOENCODING: 'utf-8',
+      HF_HUB_DISABLE_SYMLINKS_WARNING: '1',
+      HF_HUB_OFFLINE: '1',
+      VIENEU_PRECISION: process.env.VIENEU_PRECISION || 'int8',
+      VIENEU_WATERMARK: '0',
+    },
+  });
+  vieneuProc = proc;
+
+  let rxBuf: Buffer = Buffer.alloc(0);
+  proc.stdout.on('data', (chunk: Buffer) => {
+    rxBuf = rxBuf.length === 0 ? chunk : Buffer.concat([rxBuf, chunk]);
+    while (rxBuf.length >= 9) {
+      const frameType = rxBuf.readUInt8(0);
+      const reqId = rxBuf.readUInt32BE(1);
+      const payloadLen = rxBuf.readUInt32BE(5);
+      if (rxBuf.length < 9 + payloadLen) break;
+      const payload = rxBuf.subarray(9, 9 + payloadLen);
+      rxBuf = rxBuf.subarray(9 + payloadLen);
+
+      if (frameType === 1) {
+        try {
+          const info = JSON.parse(payload.toString('utf8'));
+          vieneuVoices = Array.isArray(info.voices) ? info.voices : [];
+        } catch {
+          vieneuVoices = [];
+        }
+        vieneuState = 'ready';
+        broadcast('vieneu', getVieneuStatus());
+        pumpVieneuQueue();
+      } else if (frameType === 2) {
+        if (currentJob && currentJob.id === reqId) {
+          if (!currentJob.res.headersSent) {
+            currentJob.res.setHeader('Content-Type', 'audio/wav');
+            currentJob.res.setHeader('Cache-Control', 'no-store');
+          }
+          currentJob.parts.push(Buffer.from(payload));
+          if (!currentJob.res.writableEnded) currentJob.res.write(payload);
+        }
+      } else if (frameType === 3) {
+        if (currentJob && currentJob.id === reqId) {
+          const job = currentJob;
+          currentJob = null;
+          clearTimeout(job.timer);
+          if (!job.res.writableEnded) job.res.end();
+          if (job.parts.length > 0) {
+            const cacheKey = `${job.voice}|${job.text}`;
+            vieneuCache.set(cacheKey, Buffer.concat(job.parts));
+            if (vieneuCache.size > 120) vieneuCache.delete(vieneuCache.keys().next().value!);
+          }
+          job.resolve(true);
+          pumpVieneuQueue();
+        }
+      } else if (frameType === 4) {
+        const errMsg = payload.toString('utf8');
+        console.warn('[VieNeu Worker lỗi]', errMsg);
+        if (currentJob && currentJob.id === reqId) {
+          const job = currentJob;
+          currentJob = null;
+          clearTimeout(job.timer);
+          if (job.res.headersSent) {
+            if (!job.res.writableEnded) job.res.end();
+            job.resolve(true);
+          } else {
+            job.resolve(false);
+          }
+          pumpVieneuQueue();
+        }
+      }
+    }
+  });
+
+  proc.on('exit', (code) => {
+    if (vieneuProc !== proc) return;
+    vieneuProc = null;
+    console.warn(`[VieNeu] Worker đã thoát (code=${code})`);
+    if (currentJob) {
+      const job = currentJob;
+      currentJob = null;
+      clearTimeout(job.timer);
+      if (job.res.headersSent) {
+        if (!job.res.writableEnded) job.res.end();
+        job.resolve(true);
+      } else {
+        job.resolve(false);
+      }
+    }
+    while (priorityJobs.length > 0) {
+      const j = priorityJobs.shift()!;
+      clearTimeout(j.timer);
+      j.resolve(false);
+    }
+    while (prefetchJobs.length > 0) {
+      const j = prefetchJobs.shift()!;
+      clearTimeout(j.timer);
+      j.resolve(false);
+    }
+    vieneuState = 'unavailable';
+    broadcast('vieneu', getVieneuStatus());
+  });
+}
+
+const cleanupWorker = () => {
+  if (vieneuProc) {
+    try {
+      vieneuProc.kill();
+    } catch {
+      // bỏ qua
+    }
+    vieneuProc = null;
+  }
+};
+process.on('exit', cleanupWorker);
+process.on('SIGINT', () => {
+  cleanupWorker();
+  process.exit(0);
+});
+process.on('SIGTERM', () => {
+  cleanupWorker();
+  process.exit(0);
+});
+
+async function vieneuTts(text: string, res: express.Response, isPrefetch: boolean): Promise<boolean> {
+  const voice = activeVieneuVoice;
+  if (!voice) return false;
+  const cacheKey = `${voice}|${text}`;
+  const cached = vieneuCache.get(cacheKey);
   if (cached) {
     res.setHeader('Content-Type', 'audio/wav');
     res.send(cached);
     return true;
   }
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 5000); // chỉ chờ tối đa 5 giây cho tới byte đầu
-  try {
-    const r = await fetch(`${VIENEU_URL}/v1/audio/speech`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'vieneu', voice: VIENEU_VOICE, input: text, response_format: 'wav' }),
-      signal: ctrl.signal,
-    });
-    clearTimeout(timer);
-    if (!r.ok || !r.body) throw new Error(`HTTP ${r.status}`);
-    res.setHeader('Content-Type', 'audio/wav');
-    res.setHeader('Cache-Control', 'no-store');
-    const parts: Buffer[] = [];
-    for await (const chunk of r.body as unknown as AsyncIterable<Uint8Array>) {
-      const b = Buffer.from(chunk);
-      parts.push(b);
-      res.write(b);
-    }
-    res.end();
-    vieneuCache.set(text, Buffer.concat(parts));
-    if (vieneuCache.size > 100) vieneuCache.delete(vieneuCache.keys().next().value!);
-    return true;
-  } catch (err) {
-    clearTimeout(timer);
-    if (res.headersSent) {
-      res.end();
-      return true;
-    }
-    console.warn('[VieNeu lỗi, dùng giọng Edge]', err instanceof Error ? err.message : err);
-    return false;
-  }
+  if (vieneuState === 'unavailable') return false;
+  if (vieneuState === 'loading' && !isPrefetch) return false; // Đang nạp mà cần đọc ngay thì dùng tạm Edge để không chờ
+
+  return new Promise<boolean>((resolve) => {
+    const id = nextJobId++;
+    const timeoutMs = isPrefetch ? 45_000 : 12_000;
+    const job: VieneuJob = {
+      id,
+      text,
+      voice,
+      res,
+      parts: [],
+      resolve,
+      timer: setTimeout(() => {
+        const idx1 = priorityJobs.indexOf(job);
+        if (idx1 !== -1) priorityJobs.splice(idx1, 1);
+        const idx2 = prefetchJobs.indexOf(job);
+        if (idx2 !== -1) prefetchJobs.splice(idx2, 1);
+        if (currentJob !== job) {
+          resolve(false);
+        }
+      }, timeoutMs),
+    };
+    if (isPrefetch) prefetchJobs.push(job);
+    else priorityJobs.push(job);
+    pumpVieneuQueue();
+  });
 }
+
+app.get('/api/tts/status', (_req, res) => res.json(getVieneuStatus()));
+app.post('/api/tts/voice', (req, res) => {
+  const v = typeof req.body?.voice === 'string' ? req.body.voice.trim().slice(0, 60) : '';
+  activeVieneuVoice = v;
+  saveSettings({ vieneuVoice: v });
+  broadcast('vieneu', getVieneuStatus());
+  broadcast('control', { action: 'setVoice', text: v || 'edge' });
+  res.json({ success: true, ...getVieneuStatus() });
+});
 
 app.get('/api/tts', async (req, res) => {
   try {
     const raw = String(req.query.text || '').trim().slice(0, 1500);
     if (!raw) return res.status(400).send('Thiếu text');
     const rate = Math.min(1.5, Math.max(0.5, Number(req.query.rate) || 1));
-    if (VIENEU_VOICE && (await vieneuTts(raw, res))) return;
+    const isPrefetch = req.query.prefetch === '1';
+    if (activeVieneuVoice && (await vieneuTts(raw, res, isPrefetch))) return;
     // Edge / Google không hiểu thẻ cảm xúc [cười] [thở dài]...: bỏ đi để khỏi đọc thành chữ
     const text = raw.replace(/\[[^\]]*\]\s*/g, '').trim();
     if (!text) return res.status(204).end();
@@ -625,6 +836,9 @@ async function start() {
     app.use(express.static(path.join(__dirname, 'dist')));
     app.get('*', (_req, res) => res.sendFile(path.join(__dirname, 'dist', 'index.html')));
   }
+
+  // Khởi chạy ngầm worker giọng đọc VieNeu-TTS ngay trong tiến trình con
+  startVieneuWorker();
 
   // Chỉ nghe trên máy này: API không có đăng nhập, người cùng Wi-Fi không được điều khiển giọng đọc
   app.listen(PORT, '127.0.0.1', () => {
