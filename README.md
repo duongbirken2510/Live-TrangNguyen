@@ -227,7 +227,20 @@ Khi chạy game, trang điều khiển mở tại **`http://localhost:3007`** cu
    - Server Express + Vite và tiến trình ngầm **VieNeu-TTS Worker** sẽ tự động khởi động trong **cùng một cửa sổ duy nhất**.
    - Sau vài giây, trình duyệt tự động mở Bảng điều khiển tại `http://localhost:3007`.
 
-### 6.3. Đưa Màn Hình Game Lên TikTok LIVE Studio
+### 6.3. Trường Hợp Máy Tính Mới Chưa Có Giọng AI "Adam bựa" (VieNeu-TTS)
+
+Khi tải mã nguồn về một máy tính mới chưa từng cài `VieNeu-TTS`:
+- **Chế độ chạy ngay không cần cài thêm gì:** Nếu máy chỉ có Node.js, khi mở `BAT-LIVE.bat`, hệ thống sẽ tự động phát hiện chưa có môi trường Python AI và **tự động chuyển sang giọng nam Microsoft Edge (`NamMinh`)** miễn phí — Ông Đồ vẫn đọc đề, dẫn chuyện bình thường 100%, không bao giờ bị mất tiếng.
+- **Cách cài giọng `"Adam bựa"` & 25 giọng AI VieNeu chỉ với 1 cú nhấp đúp:**
+  1. Cài đặt **Python 3.11 hoặc 3.12** từ [python.org/downloads](https://www.python.org/downloads/) *(nhớ tích chọn ô **`Add python.exe to PATH`** ở màn hình đầu tiên khi cài)*.
+  2. Trong thư mục dự án, bấm đúp vào file **`CAI-GIONG-ADAM.bat`**.
+  3. Script sẽ tự động làm toàn bộ 4 bước:
+     - Tải bộ mã nguồn `VieNeu-TTS` về thư mục `VieNeu-TTS/`.
+     - Tạo môi trường ảo `VieNeu-TTS\.venv` và cài đặt thư viện `onnxruntime` (chạy mượt ngay trên CPU thường, không cần card rời).
+     - Tự động tải trước model **`VieNeu-TTS-v3-Turbo` (`onnx_int8`)** cùng giọng **`"Adam bựa"`** và 25 giọng Việt về máy.
+  4. Sau khi báo `CAI DAT THANH CONG`, chỉ cần mở **`BAT-LIVE.bat`** là có ngay giọng `"Adam bựa"`!
+
+### 6.4. Đưa Màn Hình Game Lên TikTok LIVE Studio
 1. Mở **TikTok LIVE Studio**, chọn khung hình **Dọc (9:16 — 1080 × 1920)**.
 2. Bấm **Thêm nguồn (Add Source)** ➔ chọn **Liên kết (Link / Browser Source)**.
 3. Nhập địa chỉ:
