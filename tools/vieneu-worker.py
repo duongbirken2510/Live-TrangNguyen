@@ -28,6 +28,11 @@ os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
 os.environ.setdefault("VIENEU_PRECISION", "int8")
 os.environ.setdefault("VIENEU_WATERMARK", "0")
 
+# Nếu có sẵn thư mục model đóng gói offline (VieNeu-TTS/hf_cache) thì ưu tiên dùng ngay không cần tải mạng
+_local_hf_cache = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "VieNeu-TTS", "hf_cache")
+if os.path.isdir(_local_hf_cache):
+    os.environ.setdefault("HF_HUB_CACHE", _local_hf_cache)
+
 SAMPLE_RATE = 48_000
 FRAME_READY = 1
 FRAME_CHUNK = 2

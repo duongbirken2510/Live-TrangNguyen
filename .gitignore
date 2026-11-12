@@ -6,4 +6,8 @@ dist/
 .claude/settings.local.json
 settings.json
 data/
-VieNeu-TTS/
+VieNeu-TTS/.venv/
+VieNeu-TTS/hf_cache/
+VieNeu-TTS/**/__pycache__/
+VieNeu-TTS/src/*.egg-info/
+release/
