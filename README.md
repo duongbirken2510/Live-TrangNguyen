@@ -6,6 +6,11 @@
   <p>
     <i>Hành trình từ Trường Làng đến Sân Rồng Hoàng Cung · Tích hợp sẵn giọng đọc AI VieNeu-TTS ("Adam bựa" & 25 giọng Việt) · Chấm điểm chuẩn từng mili-giây</i>
   </p>
+  <p>
+    🌐 <b>Website chính thức & Liên hệ tác giả:</b> <a href="https://duongbirken.deta.vn"><b>https://duongbirken.deta.vn</b></a>
+    &nbsp;·&nbsp;
+    📘 <b>Hồ sơ công nghệ chi tiết (Whitepaper):</b> <a href="info/Introduce_LiveTrangNguyen.md"><b>info/Introduce_LiveTrangNguyen.md</b></a>
+  </p>
 </div>
 
 ---
@@ -315,8 +320,13 @@ npm run lint
 
 ---
 
-## 📄 Giấy Phép & Liên Hệ
+## 👨‍💻 9. Tác Giả & Liên Hệ (Author & Contact)
 
-- Dự án được phát triển và nâng cấp bởi **Duong Birken** — [https://duongbirken.deta.vn](https://duongbirken.deta.vn)
-- Kho mã nguồn: [https://github.com/duongbirken2510/Live-TrangNguyen](https://github.com/duongbirken2510/Live-TrangNguyen)
-- Giấy phép mã nguồn: [MIT License](LICENSE).
+| 🇻🇳 Lời nhắn từ Tác giả | 🇬🇧 Note from the Author |
+| :--- | :--- |
+| **Live-TrangNguyen (`Ai Là Trạng Nguyên`)** là dự án tâm huyết được phát triển và nâng cấp bởi **Duong Birken**. Nếu dự án hữu ích với bạn, hãy tặng một ngôi sao (**⭐ Star**) trên GitHub hoặc ghé thăm website chính thức để kết nối, khám phá thêm các công cụ tự động hóa và góp ý nhé! | **Live-TrangNguyen** is crafted with passion by **Duong Birken**. If you find this project helpful, please consider giving it a **⭐ Star** on GitHub or visiting the official website to connect and share your feedback! |
+
+- **🌐 Website chính thức & Liên hệ tác giả:** [**https://duongbirken.deta.vn**](https://duongbirken.deta.vn)
+- **📘 Hồ sơ giới thiệu sản phẩm & kiến trúc 10 chương (`info/`):** [**info/Introduce_LiveTrangNguyen.md**](info/Introduce_LiveTrangNguyen.md)
+- **📦 Kho mã nguồn GitHub:** [**https://github.com/duongbirken2510/Live-TrangNguyen**](https://github.com/duongbirken2510/Live-TrangNguyen)
+- **📄 Giấy phép:** [MIT License](LICENSE).

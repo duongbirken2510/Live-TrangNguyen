@@ -179,6 +179,12 @@ export function Dashboard({
                 ))}
                 <option value="">🌐 Microsoft Edge (NamMinh — nhẹ, không dùng AI local)</option>
               </select>
+              {vieneu.state === 'unavailable' && (
+                <div className="mt-2 rounded-lg bg-amber-500/10 px-3 py-2 text-xs text-amber-200 ring-1 ring-amber-500/30">
+                  💡 <b>Máy chưa có giọng AI "Adam bựa"?</b> Hãy cài Python 3.11/3.12 rồi bấm đúp file{' '}
+                  <code className="rounded bg-slate-900 px-1.5 py-0.5 text-amber-300">CAI-GIONG-ADAM.bat</code> trong thư mục game để tự động tải và cài đặt từ A–Z.
+                </div>
+              )}
             </div>
             <div className="mb-3 flex flex-wrap items-center gap-2 text-sm">
               <span>
@@ -261,6 +267,41 @@ export function Dashboard({
           </Card>
 
           {extra}
+
+          <Card title="Thông tin dự án & Tác giả (Info)">
+            <div className="space-y-2.5 text-sm text-slate-300">
+              <p>
+                <b className="text-amber-300">Ai Là Trạng Nguyên (Live-TrangNguyen v2.0)</b> — Game show đố vui khoa cử tương tác tự động 100% cho TikTok LIVE, phát triển và nâng cấp bởi{' '}
+                <a
+                  href="https://duongbirken.deta.vn"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-semibold text-amber-400 underline decoration-amber-400/50 hover:text-amber-300"
+                >
+                  Duong Birken
+                </a>
+                .
+              </p>
+              <div className="flex flex-wrap gap-2 pt-1">
+                <a
+                  href="https://duongbirken.deta.vn"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-3.5 py-2 text-xs font-semibold text-slate-950 hover:bg-amber-400"
+                >
+                  🌐 Website: duongbirken.deta.vn
+                </a>
+                <a
+                  href="https://github.com/duongbirken2510/Live-TrangNguyen"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-slate-800 px-3.5 py-2 text-xs font-medium text-slate-100 ring-1 ring-slate-700 hover:bg-slate-700"
+                >
+                  ⭐ GitHub Repository & Tài liệu
+                </a>
+              </div>
+            </div>
+          </Card>
         </div>
 
         <div className="justify-self-center">
