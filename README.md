@@ -206,6 +206,7 @@ Khi chạy game, trang điều khiển mở tại **`http://localhost:3007`** cu
 - **Điều khiển trực tiếp ván thi:**
   - `▶ Bắt đầu ván mới ngay`: Bỏ qua đếm ngược, dọn sạch bàn ghế cũ và bắt đầu ngay Câu 1/20.
   - `🚫 Bỏ câu này`: Bỏ qua ngay câu hỏi hiện tại (và đánh dấu không bao giờ hỏi lại câu đó nữa).
+  - `🛑 Tắt Live (Ông Đồ chào tạm biệt)` & **Bộ hẹn giờ tự động kết thúc (`+15p`, `+30p`, `+60p`, `+90p`, `+120p`)**: Dừng ván thi, lưu điểm các sĩ tử đang thi vào Bảng Vàng Tuần, hiện bảng **"🏮 TRƯỜNG THI TẠM NGHỈ — HẸN GẶP LẠI"** và Ông Đồ đọc kịch bản cảm ơn khán giả, nhắc Follow kênh trước khi tắt nhạc nền.
   - `Kỳ 1: KHẢO HẠCH` · `Kỳ 2: THI HƯƠNG` · `Kỳ 3: THI HỘI` · `Kỳ 4: THI ĐÌNH`: Chuyển nhanh tới bất kỳ kỳ thi nào để đổi bối cảnh sân thi ngay lập tức.
   - `Reset game`: Đưa phòng thi về trạng thái đếm ngược chờ ván mới và làm trống toàn bộ chỗ ngồi.
 - **Bộ công cụ giả lập (Test khi chưa bật LIVE):**

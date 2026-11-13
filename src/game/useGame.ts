@@ -92,8 +92,10 @@ export function useGame() {
         return voice.say(pick(L.dauBang)?.(speakableName(ev.name)) ?? '', true);
       case 'mienKem':
         return voice.say(pick(L.mienKem)?.(TEN_MIEN[ev.mien], GOI_MIEN[ev.mien]) ?? '');
-      case 'saiLien':
-        return talk.treu.them(ev.id, ev.name, 'sai', Date.now());
+      case 'saiLien': {
+        const line = pick(L.treu.sai)?.(speakableName(ev.name), room.view(Date.now()).vongTen) ?? '';
+        return voice.say(line, true);
+      }
       case 'cuuTro':
         return voice.say(pick(L.cuuTro) ?? '', true);
       case 'dapAn': {

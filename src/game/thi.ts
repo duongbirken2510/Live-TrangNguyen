@@ -469,7 +469,6 @@ export class KyThi {
     }
     nhanh.sort((a, b) => a.ms - b.ms);
     this.ketQua = { soDung: nhanh.length, nhanh: nhanh.slice(0, 3) };
-    if (treuSai) this.events.push({ t: 'saiLien', id: treuSai.id, name: treuSai.name });
     // đổi ngôi đầu bảng: hô tên người mới dẫn đầu (giãn cách vài câu cho đỡ lặp)
     const dau = this.bxh(1)[0];
     if (dau && dau.id !== this.dauTruoc) {
@@ -496,6 +495,7 @@ export class KyThi {
       t: 'dapAn', chu: 'ABCD'[c.ans], dap: c.opts[c.ans], soDung: nhanh.length, soNop: this.answers.size,
       nhanh: nhanh[0]?.name, msNhanh: nhanh[0]?.ms,
     });
+    if (treuSai) this.events.push({ t: 'saiLien', id: treuSai.id, name: treuSai.name });
   }
 
   private sauDapAn(now: number) {
