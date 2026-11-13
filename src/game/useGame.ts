@@ -93,7 +93,7 @@ export function useGame() {
       case 'mienKem':
         return voice.say(pick(L.mienKem)?.(TEN_MIEN[ev.mien], GOI_MIEN[ev.mien]) ?? '');
       case 'saiLien': {
-        const line = pick(L.treu.sai)?.(speakableName(ev.name), room.view(Date.now()).vongTen) ?? '';
+        const line = pick(L.treu.sai)?.(speakableName(ev.name)) ?? '';
         return voice.say(line, true);
       }
       case 'cuuTro':
