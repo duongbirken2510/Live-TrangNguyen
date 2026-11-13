@@ -182,13 +182,14 @@ class Sfx {
   /** So ảnh chụp trước và sau để phát tiếng đúng lúc */
   watch(a: View | null, b: View, speaking: boolean) {
     const mode: Mode =
-      b.phase === 'vinhQuy' ? 'tat'
+      b.phase === 'vinhQuy' || (b.phase === 'nghi' && !speaking) ? 'tat'
       : b.phase === 'hoi' ? (b.con <= 5 ? 'gap' : 'hoi')
       : b.phase === 'cho' || b.phase === 'vong' || b.phase === 'bangVang' ? 'vui'
       : 'lang';
     this.music(mode, speaking && mode !== 'gap', b.phase === 'hoi' ? 1 - b.con / b.tongGiay : 0);
     if (!a) return;
     if (b.phase === 'vong' && a.phase !== 'vong') this.play('trong', 500);
+    if (b.phase === 'nghi' && a.phase !== 'nghi') this.play('phao', 1000);
     if (b.phase === 'hoi' && a.phase !== 'hoi') this.play('hien', 300);
     if (b.phase === 'hoi' && b.soNop > a.soNop) this.play('nop', 180);
     if (b.phase === 'hoi' && b.con <= 5 && b.con >= 1 && b.con !== this.lastMo) {

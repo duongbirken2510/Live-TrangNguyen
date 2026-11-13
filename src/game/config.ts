@@ -216,6 +216,12 @@ export const GAME = {
       ],
     },
     khongAiThi: '[thở dài] Ván này trường thi vắng tanh. Ván sau mọi người vào thi cho vui nhé.',
+    ketThuc: [
+      (kenh: string, dau?: string) =>
+        `[hắng giọng] Các sĩ tử thân mến! Thời gian mở trường thi hôm nay của ${kenh} đến đây là khép lại rồi. Ông đồ xin cảm ơn tất cả các sĩ tử đã nhiệt tình gõ đáp án, thả tim và tặng quà ủng hộ trường thi.${dau ? ` Chúc mừng ${dau} cùng các sĩ tử đã ghi danh lên Bảng Vàng hôm nay!` : ''} Ai chưa bấm theo dõi kênh thì nhớ bấm nút Follow ngay để buổi sau trường thi mở cửa là vào đỗ Trạng Nguyên nhé. Giờ thì ông đồ xin phép đóng cổng trường thi, chúc mọi người nhiều sức khỏe, bình an và hẹn gặp lại vào buổi live tiếp theo! [cười]`,
+      (kenh: string, dau?: string) =>
+        `[hắng giọng] Tiếng trống thu bài cuối buổi đã điểm rồi! Hôm nay trường thi của ${kenh} xin phép tạm nghỉ tại đây. Ông đồ cảm ơn tấm lòng của mọi người đã vào thi tài, thả tim và trò chuyện thật rôm rả.${dau ? ` Hôm nay ${dau} xuất sắc dẫn đầu trường thi, ông đồ khen ngợi nhé!` : ''} Nhớ bấm theo dõi ${kenh} để không bỏ lỡ kỳ thi tới nha. Chúc các sĩ tử thật nhiều niềm vui, ngủ ngon và hẹn gặp lại! [cười]`,
+    ],
   },
 
   // ---------- Chào người vào ----------

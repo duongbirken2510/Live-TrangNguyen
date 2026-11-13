@@ -54,7 +54,7 @@ export function diemDung(max: number, ms: number, totalMs: number) {
   return Math.round(max * (GAME.diemSan + (1 - GAME.diemSan) * left));
 }
 
-export type Phase = 'cho' | 'vong' | 'doc' | 'hoi' | 'chot' | 'dapAn' | 'bangVang' | 'vinhQuy';
+export type Phase = 'cho' | 'vong' | 'doc' | 'hoi' | 'chot' | 'dapAn' | 'bangVang' | 'vinhQuy' | 'nghi';
 
 export interface SiTu {
   id: string;
@@ -90,7 +90,8 @@ export type Ev =
   | { t: 'dauBang'; name: string }
   | { t: 'mienKem'; mien: Mien }
   | { t: 'saiLien'; id: string; name: string }
-  | { t: 'latKeo' };
+  | { t: 'latKeo' }
+  | { t: 'nghi'; dau?: string };
 
 export interface Hang {
   hang: number;
@@ -147,7 +148,7 @@ export class KyThi {
   // ---------- quà: mỗi lần hiện 1 băng rôn, người khác xếp hàng (quà KHÔNG cho lợi thế trong game) ----------
   private quaCho: Qua[] = [];
   private nhacDa = false; // đã nhắc giữa giờ ở câu này chưa
-  private khach: { id: string; name: string }[] = []; // người bình luận gần đây nhất
+  khach: { id: string; name: string }[] = []; // người bình luận gần đây nhất
 
   /** Tên cho đám trẻ chạy giữa sân: người đã thi mà hết ghế, rồi tới người vừa bình luận chưa có ghế */
   treCon(ghe: Hang[]) {
@@ -233,6 +234,15 @@ export class KyThi {
     if (target === -1) return;
     this.idx = target;
     this.moVong(now);
+  }
+
+  /** Chủ kênh bấm "Tắt live": ngưng ván thi, hiện bảng tạm nghỉ và Ông Đồ đọc kịch bản chào tạm biệt */
+  ketThucLive(_now: number) {
+    this.phase = 'nghi';
+    this.endsAt = Number.MAX_SAFE_INTEGER;
+    this.answers.clear();
+    const dau = this.bxh(1)[0]?.name ?? this.tuan[0]?.name;
+    this.events.push({ t: 'nghi', dau });
   }
 
   /** Lấy các sự kiện cần đọc từ lần gọi trước */

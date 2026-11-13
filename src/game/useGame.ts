@@ -127,6 +127,15 @@ export function useGame() {
         if (ev.mien) voice.say(L.mienThang(TEN_MIEN[ev.mien.mien], ev.mien.diem), true);
         return;
       }
+      case 'nghi': {
+        // Lưu điểm các sĩ tử đang thi dở vào bảng vàng tuần trước khi kết thúc buổi live
+        const ds = [...room.siTu.values()].filter((s) => s.diem > 0).map(({ id, name, avatar, diem }) => ({ id, name, avatar, diem }));
+        if (ds.length && voice.speaker) void layTuan(post('/api/bang-tuan', { ds }));
+        const rawDau = ev.dau ? speakableName(ev.dau) : '';
+        const dau = rawDau && rawDau !== 'bạn' ? rawDau : undefined;
+        const line = pick(L.ketThuc)?.(kenh.current, dau) ?? '';
+        return voice.say(line, true, () => sfx.music('tat', false));
+      }
     }
   };
 
@@ -208,6 +217,10 @@ export function useGame() {
         voice.stop();
         room.batDau(now);
       }
+      if (c.action === 'custom' && c.text === 'tatlive') {
+        voice.stop();
+        room.ketThucLive(now);
+      }
       if (c.action === 'custom' && c.text === 'bocau') {
         room.boCau(now);
         void post('/api/da-hoi', room.used); // nhớ câu bị bỏ, tắt bật lại vẫn không hỏi
@@ -264,6 +277,7 @@ export function useGame() {
       }
     }, 250);
     const share = setInterval(() => {
+      if (room.phase === 'nghi') return;
       const line = pick(GAME.shareLines);
       if (line) voice.say(line);
     }, GAME.shareReminderEveryMs);

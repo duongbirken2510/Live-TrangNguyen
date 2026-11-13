@@ -25,12 +25,40 @@ export function GameControls() {
   const [tieuDe, setTieuDe] = useState('');
   const [tenOngDo, setTenOngDo] = useState('');
   const [daLuu, setDaLuu] = useState('');
+  const [stopAt, setStopAt] = useState<number | null>(null);
+  const [remainSec, setRemainSec] = useState(0);
+
   useEffect(() => {
     fetch('/api/cai-dat').then((r) => r.json()).then((c) => {
       setTieuDe(c.tieuDe ?? '');
       setTenOngDo(c.tenOngDo ?? '');
     }).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!stopAt) {
+      setRemainSec(0);
+      return;
+    }
+    const tick = () => {
+      const left = Math.max(0, Math.ceil((stopAt - Date.now()) / 1000));
+      setRemainSec(left);
+      if (left <= 0) {
+        setStopAt(null);
+        void sendControl('custom', 'tatlive');
+      }
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [stopAt]);
+
+  const fmtTime = (sec: number) => {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m}:${String(s).padStart(2, '0')}`;
+  };
+
   const luu = async () => {
     const r = await fetch('/api/cai-dat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tieuDe, tenOngDo }) });
     setDaLuu(r.ok ? 'Đã lưu, màn hình đổi ngay' : 'Lưu không được');
@@ -54,12 +82,58 @@ export function GameControls() {
         <span className="text-sm text-white/60">{daLuu || 'Để trống là dùng tên mặc định'}</span>
       </div>
       <div className="flex flex-wrap gap-2">
-        <button className={`${btn} bg-amber-600 text-white`} onClick={() => sendControl('custom', 'batdau')}>
+        <button
+          className={`${btn} bg-amber-600 text-white hover:bg-amber-500`}
+          onClick={() => {
+            setStopAt(null);
+            void sendControl('custom', 'batdau');
+          }}
+        >
           ▶ Bắt đầu ván mới ngay
         </button>
-        <button className={`${btn} bg-red-800 text-white`} onClick={() => sendControl('custom', 'bocau')}>
+        <button className={`${btn} bg-red-800 text-white hover:bg-red-700`} onClick={() => sendControl('custom', 'bocau')}>
           🚫 Bỏ câu này
         </button>
+        <button
+          className={`${btn} bg-rose-600 text-white ring-1 ring-rose-400/50 hover:bg-rose-500`}
+          onClick={() => {
+            setStopAt(null);
+            void sendControl('custom', 'tatlive');
+          }}
+        >
+          🛑 Tắt Live (Ông Đồ chào tạm biệt)
+        </button>
+      </div>
+      <div className="rounded-xl bg-black/30 p-3 ring-1 ring-white/10">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs text-white/75">
+          <span>⏰ Hẹn giờ tự động dừng game & Ông Đồ đọc lời chào tắt Live:</span>
+          {stopAt ? (
+            <span className="rounded-full bg-rose-500/20 px-2.5 py-0.5 font-bold text-rose-300">
+              ⏳ Tự kết thúc sau {fmtTime(remainSec)}
+            </span>
+          ) : (
+            <span className="text-white/40">Chưa hẹn giờ</span>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {[15, 30, 60, 90, 120].map((phut) => (
+            <button
+              key={phut}
+              className="rounded-lg bg-white/10 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/20"
+              onClick={() => setStopAt(Date.now() + phut * 60_000)}
+            >
+              +{phut} phút
+            </button>
+          ))}
+          {stopAt && (
+            <button
+              className="rounded-lg bg-rose-900/60 px-3 py-1.5 text-xs font-semibold text-rose-200 hover:bg-rose-800"
+              onClick={() => setStopAt(null)}
+            >
+              ✖ Hủy hẹn giờ
+            </button>
+          )}
+        </div>
       </div>
       <div className="text-sm text-white/60">Chuyển nhanh kỳ thi (đổi bối cảnh sân thi):</div>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">

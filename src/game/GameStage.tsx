@@ -52,7 +52,7 @@ export function GameStage({ game }: { game: GameState }) {
         </div>
       )}
 
-      {(v.phase === 'vinhQuy' || v.qua?.big) && <PhaoGiay />}
+      {(v.phase === 'vinhQuy' || v.phase === 'nghi' || v.qua?.big) && <PhaoGiay />}
       <BangQua v={v} />
     </div>
   );
@@ -342,10 +342,12 @@ function DongCau({ v, tieuDe }: { v: View; tieuDe: string }) {
   return (
     <>
       <div className="absolute flex flex-col items-center justify-center gap-1 rounded-[14px] border-[3px] px-3" style={{ ...plank, left: 150, top: 362, width: 210, height: 78 }}>
-        <span className="text-[28px] font-extrabold leading-none">{v.phase === 'cho' ? 'ĐỢI VÁN MỚI' : `CÂU ${Math.min(v.cauSo, v.tongCau)}/${v.tongCau}`}</span>
+        <span className="text-[28px] font-extrabold leading-none">
+          {v.phase === 'nghi' ? 'TẠM NGHỈ' : v.phase === 'cho' ? 'ĐỢI VÁN MỚI' : `CÂU ${Math.min(v.cauSo, v.tongCau)}/${v.tongCau}`}
+        </span>
         <span className="flex gap-1.5">
           {GAME.vong.map((_, i) => (
-            <span key={i} className="h-4 w-7 rounded-full" style={{ background: v.phase === 'cho' ? '#6b5236' : i < v.vong ? '#c8102e' : i === v.vong ? GOLD : '#6b5236' }} />
+            <span key={i} className="h-4 w-7 rounded-full" style={{ background: v.phase === 'cho' || v.phase === 'nghi' ? '#6b5236' : i < v.vong ? '#c8102e' : i === v.vong ? GOLD : '#6b5236' }} />
           ))}
         </span>
       </div>
@@ -358,7 +360,7 @@ function DongCau({ v, tieuDe }: { v: View; tieuDe: string }) {
           boxShadow: v.latKeo ? '0 0 30px rgba(255,211,77,.9)' : undefined,
         }}
       >
-        {v.phase === 'cho' ? 'SẮP THI' : v.latKeo ? 'NƯỚC RÚT ×2' : v.vongNhan}
+        {v.phase === 'nghi' ? 'HẸN GẶP LẠI' : v.phase === 'cho' ? 'SẮP THI' : v.latKeo ? 'NƯỚC RÚT ×2' : v.vongNhan}
       </div>
       {/* tên game treo giữa mái tranh */}
       <div className="absolute flex items-center justify-center gap-3 whitespace-nowrap rounded-[18px] px-3 text-center font-extrabold" style={{
@@ -407,6 +409,25 @@ function DongCau({ v, tieuDe }: { v: View; tieuDe: string }) {
 function BangDen({ v }: { v: View }) {
   const phan = { color: PHAN, textShadow: '0 0 2px rgba(255,255,255,.35)' };
   const full = { left: 230, top: 530, width: 620, height: 296 };
+  if (v.phase === 'nghi') {
+    return (
+      <motion.div
+        initial={{ scale: 0.85, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="absolute flex flex-col items-center justify-center px-4 text-center"
+        style={{ ...full, ...phan }}
+      >
+        <div className="text-[44px] font-extrabold leading-tight" style={{ color: '#ffe27a' }}>
+          🏮 TRƯỜNG THI TẠM NGHỈ 🏮
+        </div>
+        <div className="mt-3 space-y-1.5 text-[27px] font-semibold leading-snug">
+          <div>Cảm ơn các sĩ tử đã nhiệt tình tranh tài!</div>
+          <div style={{ color: '#9dffb3' }}>Bấm + Follow kênh để đón kỳ thi tiếp theo</div>
+          <div>Chúc mọi người nhiều sức khỏe & hẹn gặp lại! 👋</div>
+        </div>
+      </motion.div>
+    );
+  }
   if (v.phase === 'cho') {
     return (
       <div className="absolute flex flex-col items-center justify-center text-center" style={{ ...full, ...phan }}>
@@ -449,7 +470,7 @@ function BangDen({ v }: { v: View }) {
 
 /** 4 ô đáp án viết phấn trên bảng. Đang hỏi không hiện tỉ lệ (tránh người vào sau chép theo số đông). */
 function DapAn({ v }: { v: View }) {
-  if (v.phase === 'cho' || v.phase === 'vong') return null;
+  if (v.phase === 'cho' || v.phase === 'vong' || v.phase === 'nghi') return null;
   const total = v.counts ? v.counts.reduce((a, b) => a + b, 0) : 0;
   return (
     <>
@@ -500,6 +521,8 @@ function DongNhac({ v }: { v: View }) {
   const kq = v.ketQua;
   const noi = kq
     ? kq.soDung > 0 ? `✅ ${kq.soDung} người đúng · nhanh nhất ${kq.nhanh[0].name} ${(kq.nhanh[0].ms / 1000).toFixed(2).replace('.', ',')}s` : '😮 Chưa ai đúng câu này'
+    : v.phase === 'nghi'
+    ? '👋 Cảm ơn các sĩ tử · Hẹn gặp lại ở buổi live tiếp theo!'
     : v.phase === 'hoi'
     ? `📜 ${v.recent.length ? `${v.recent.slice(0, 3).join(', ')} vừa nộp · ` : ''}${v.soNop} sĩ tử đã nộp`
     : 'Gõ A, B, C, D trả lời · Bắc, Trung, Nam chọn phe';
@@ -608,7 +631,7 @@ function Dong({ h, big, sang }: { h: Hang; big?: boolean; sang?: boolean }) {
 /** Bảng vàng nhỏ treo dưới tán đa: top 5 lúc hỏi, top 10 (2 cột) lúc công bố; lúc chờ ván thì bảng vàng tuần */
 function BangNho({ v }: { v: View }) {
   const box = { left: 90, top: 96, width: 900, height: 252, background: PANEL, borderColor: GOLD };
-  if (v.phase === 'cho' && v.tuan.length) {
+  if ((v.phase === 'cho' || (v.phase === 'nghi' && v.top.length === 0)) && v.tuan.length) {
     return (
       <div className="absolute rounded-[18px] border-[3px] px-5 py-2" style={box}>
         <div className="flex items-baseline justify-between">
@@ -756,7 +779,7 @@ function TamKhoi({ h, left, top, imgH, delay, big }: { h: Hang; left: number; to
 /** Ông đồ đứng cạnh bảng đen, bên trái trước gốc đa; đổi tư thế theo pha */
 function MC({ v, ten }: { v: View; ten: string }) {
   const pose =
-    v.phase === 'vinhQuy' ? 'mung'
+    v.phase === 'vinhQuy' || v.phase === 'nghi' ? 'mung'
     : v.phase === 'dapAn' ? (v.ketQua?.soDung ? 'mung' : 'tiec')
     : v.phase === 'hoi' ? 'suy-nghi'
     : v.phase === 'doc' || v.phase === 'bangVang' ? 'chi'
