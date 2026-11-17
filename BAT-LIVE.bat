@@ -17,6 +17,8 @@ if not exist "VieNeu-TTS\.venv\Scripts\python.exe" (
 echo Dang bat game + giong doc AI VieNeu (Adam bua) tich hop ngam...
 echo Dong cua so nay la tat toan bo game va giong doc.
 echo Link cho TikTok LIVE Studio: http://lvh.me:3007/?view=stage  (1080 x 1920)
+rem Dam bao luon chay qua Vite ngay ca khi may tinh co bien NODE_ENV=production
+set NODE_ENV=development
 rem Che do live: trang stage khong tu tai lai khi sua code
 set LIVE_MODE=1
 set PORT=3007

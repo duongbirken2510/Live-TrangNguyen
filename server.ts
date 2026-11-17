@@ -821,7 +821,9 @@ app.get('/api/tts', async (req, res) => {
 
 // ---------- Khởi động ----------
 async function start() {
-  if (process.env.NODE_ENV !== 'production') {
+  const distDir = path.join(__dirname, 'dist');
+  const distIndex = path.join(distDir, 'index.html');
+  if (process.env.NODE_ENV !== 'production' || !fs.existsSync(distIndex)) {
     const { createServer } = await import('vite');
     const vite = await createServer({
       // LIVE_MODE=1 (BAT-LIVE.bat): tắt tự tải lại, sửa code không làm trang stage reset giữa live
@@ -835,8 +837,8 @@ async function start() {
     });
     app.use(vite.middlewares);
   } else {
-    app.use(express.static(path.join(__dirname, 'dist')));
-    app.get('*', (_req, res) => res.sendFile(path.join(__dirname, 'dist', 'index.html')));
+    app.use(express.static(distDir));
+    app.get('*', (_req, res) => res.sendFile(distIndex));
   }
 
   // Khởi chạy ngầm worker giọng đọc VieNeu-TTS ngay trong tiến trình con
